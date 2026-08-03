@@ -1,7 +1,7 @@
 // src/constants.js
 // DoH Worker 常量定义
 
-export const UPSTREAM_URL = 'https://dns.google/dns-query';
+export const UPSTREAM_URL = 'https://dns.quad9.net/dns-query';
 export const UPSTREAM_TIMEOUT_MS = 5000;
 export const MAX_CACHE_TTL = 86400; // 24 小时
 export const DEFAULT_TTL = 60; // NXDOMAIN 或空响应的默认 TTL
