@@ -1,6 +1,7 @@
 // src/doh.js
 // DoH 协议解析 — GET ?dns=base64url 和 POST application/dns-message
 
+import { Buffer } from 'buffer';
 import { MAX_DNS_MESSAGE_SIZE } from './constants.js';
 
 /**

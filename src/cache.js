@@ -1,6 +1,7 @@
 // src/cache.js
 // 缓存键构建 & Cloudflare Cache API 读写
 
+import { Buffer } from 'buffer';
 import { CACHE_BASE, MAX_CACHE_TTL, DEFAULT_TTL } from './constants.js';
 
 /**

@@ -1,6 +1,7 @@
 // src/upstream.js
 // 上游 DNS 查询 — 转发到配置的 DoH 端点（默认 Quad9）
 
+import { Buffer } from 'buffer';
 import { UPSTREAM_URL, UPSTREAM_TIMEOUT_MS } from './constants.js';
 
 /**

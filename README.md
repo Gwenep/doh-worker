@@ -37,7 +37,7 @@ npx wrangler login
 
 会自动打开浏览器，授权 Wrangler 访问你的 Cloudflare 账号。
 
-### 部署
+### 方式一：wrangler CLI 部署
 
 ```bash
 npx wrangler deploy
@@ -52,6 +52,19 @@ Published doh-worker (0.34 sec)
 ```
 
 这个 URL 就是你的 DoH 服务地址。
+
+### 方式二：单文件粘贴（免 CLI）
+
+仓库根目录的 `worker.js` 已经把源码、`dns-packet` 和 Buffer polyfill 打包成一个文件，可直接粘贴到 Cloudflare 控制台：
+
+1. 打开 [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → 创建或选择 Worker
+2. 点击 **Edit code**
+3. 删掉编辑器里的示例代码，把 `worker.js` 全文粘贴进去
+4. 点击 **Deploy**
+
+> 已内置所有依赖，**不需要开启 Node.js 兼容开关**，也不需要在控制台安装任何东西。
+> `worker.js` 是构建产物，不要直接修改；改完 `src/` 后运行 `npm run build` 重新生成。
+> 只想换上游 DNS 时，可以在 `worker.js` 里搜索 `https://dns.quad9.net/dns-query` 直接替换，或在 Worker 的 Settings → Variables 里加 `UPSTREAM_DOH_URL`。
 
 ### 绑定自定义域名（可选）
 
@@ -151,6 +164,12 @@ npx wrangler dev --port 8787
 # 运行单元测试
 npm test
 
+# 重新生成单文件版 worker.js
+npm run build
+
+# 可选：在本地 workerd 中验证单文件版（不开启 nodejs_compat）
+npm run verify:bundle
+
 # 测试 GET 请求
 curl -v "http://localhost:8787/?dns=AAEBAAABAAAAAAAAB2V4YW1wbGUDY29tAAABAAE"
 
@@ -174,7 +193,9 @@ dns-worker/
 │   ├── response.js     # 响应格式化 + CORS + 错误响应
 │   ├── config.js       # 运行时配置（读取 wrangler.toml [vars]）
 │   └── constants.js    # 默认常量
+├── scripts/            # 单文件打包 / 验证脚本
 ├── test/               # Vitest 单元测试
+├── worker.js           # 单文件构建产物（粘贴到控制台用，勿手改）
 ├── wrangler.toml       # Worker 配置
 ├── package.json        # 依赖清单
 └── .gitignore

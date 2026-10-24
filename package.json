@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "build": "node scripts/build.js",
+    "verify:bundle": "node scripts/verify-no-compat.mjs",
     "test": "vitest run"
   },
   "keywords": [
@@ -23,6 +25,8 @@
     "dns-packet": "^5.6.1"
   },
   "devDependencies": {
+    "buffer": "^6.0.3",
+    "esbuild": "^0.28.2",
     "vitest": "^5.0.5",
     "wrangler": "^4.118.0"
   }
