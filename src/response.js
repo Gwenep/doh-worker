@@ -2,13 +2,13 @@
 // 响应格式化 — 设置 Content-Type、Cache-Control、CORS 头
 
 /**
- * 将 Buffer 编码为 base64url 字符串
- * RFC 4648 base64url（无填充，+ 替换为 -，/ 替换为 _）
+ * 所有响应共用的 CORS 头（预检响应也会用到）
  */
-export function bufferToBase64url(buf) {
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
+export const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Accept',
+};
 
 /**
  * 格式化 DNS 响应
@@ -20,9 +20,8 @@ export function bufferToBase64url(buf) {
 export function formatResponse(dnsWireFormat, ttl) {
   const headers = {
     'Content-Type': 'application/dns-message',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Accept',
+    ...CORS_HEADERS,
+    'X-Cache': 'MISS',
   };
 
   if (ttl > 0) {
@@ -36,6 +35,7 @@ export function formatResponse(dnsWireFormat, ttl) {
 
 /**
  * 构建错误响应
+ * 只返回固定文案，内部细节通过 console.error 记录，避免泄露实现信息
  */
 export function errorResponse(status, message) {
   const body = JSON.stringify({
@@ -48,7 +48,8 @@ export function errorResponse(status, message) {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'X-Content-Type-Options': 'nosniff',
+      ...CORS_HEADERS,
       'Cache-Control': 'no-store',
     }
   });

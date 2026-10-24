@@ -6,8 +6,9 @@
 
 - **DoH 协议** — 支持 RFC 8484，GET `?dns=base64url` 和 POST `application/dns-message`
 - **ECS 注入** — 自动获取访客 IP，IPv4 /24 掩码，IPv6 /48 掩码，注入到上游 DNS 查询
-- **上游 DNS** — 转发到 Cloudflare 1.1.1.1
-- **缓存** — 利用 Cloudflare Cache API 缓存 DNS 响应，减少上游请求
+- **上游 DNS** — 转发到 Quad9（`dns.quad9.net`），可通过 `UPSTREAM_DOH_URL` 替换
+- **缓存** — 利用 Cloudflare Cache API 缓存 DNS 响应，按 ECS 子网 / DO / CD 维度区分，减少上游请求
+- **隐私** — 只向上游转发 ECS，丢弃 COOKIE/NSID 等一次性 EDNS 选项；客户端可用 `/0` 前缀主动退出 ECS
 - **CORS** — 支持跨域请求
 
 ## 部署
@@ -141,8 +142,14 @@ ECS 注入是在查询中自动添加的，可以用抓包或者通过查询回�
 ## 本地开发
 
 ```bash
+# 安装依赖
+npm install
+
 # 启动本地开发服务器
 npx wrangler dev --port 8787
+
+# 运行单元测试
+npm test
 
 # 测试 GET 请求
 curl -v "http://localhost:8787/?dns=AAEBAAABAAAAAAAAB2V4YW1wbGUDY29tAAABAAE"
@@ -163,9 +170,11 @@ dns-worker/
 │   ├── doh.js          # DoH 协议解析 (GET base64url / POST binary)
 │   ├── ecs.js          # ECS 注入 — IP 掩码、OPT 伪记录构造
 │   ├── cache.js        # 缓存键构建、Cache API 读写、TTL 提取
-│   ├── upstream.js     # 上游 1.1.1.1 DoH 查询（5 秒超时）
+│   ├── upstream.js     # 上游 DoH 查询（默认 5 秒超时）
 │   ├── response.js     # 响应格式化 + CORS + 错误响应
-│   └── constants.js    # 常量定义
+│   ├── config.js       # 运行时配置（读取 wrangler.toml [vars]）
+│   └── constants.js    # 默认常量
+├── test/               # Vitest 单元测试
 ├── wrangler.toml       # Worker 配置
 ├── package.json        # 依赖清单
 └── .gitignore
@@ -175,23 +184,33 @@ dns-worker/
 
 ### Q: 部署后返回 502
 
-本地开发时 502 是正常的，因为：
-- 本地没有 `CF-Connecting-IP` 头（部署到 CF 后会自动添加）
-- 本地网络可能无法访问 `cloudflare-dns.com`
+检查上游 DoH 是否可达（默认 `https://dns.quad9.net/dns-query`）：
 
-如果部署到 CF 后仍然 502，检查 `npx wrangler tail` 查看日志。
+```bash
+npx wrangler tail   # 查看 Workers 日志中的 "Upstream DNS query failed"
+```
+
+本地开发时 502 通常是本机网络无法访问上游 DoH 地址。
 
 ### Q: 如何修改上游 DNS 服务商？
 
-编辑 `src/constants.js` 中的 `UPSTREAM_URL`：
+优先改 `wrangler.toml`，不用改代码：
 
-```javascript
-export const UPSTREAM_URL = 'https://dns.alidns.com/dns-query'; // 改为阿里 DNS
+```toml
+[vars]
+UPSTREAM_DOH_URL = "https://dns.alidns.com/dns-query"
 ```
+
+也可以改 `src/constants.js` 里的默认值 `UPSTREAM_URL`。
 
 ### Q: 如何关闭缓存？
 
-编辑 `src/index.js`，注释掉缓存相关步骤，或者将缓存 TTL 设为 0。
+在 `wrangler.toml` 中设置：
+
+```toml
+[vars]
+CACHE_TTL_MAX = "0"
+```
 
 ### Q: 如何修改 ECS 掩码长度？
 

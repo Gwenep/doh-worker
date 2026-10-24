@@ -12,11 +12,11 @@ workers_dev = true
 #   { pattern = "dns.example.com/*", zone_id = "your-zone-id" }
 # ]
 
-# 环境变量
+# 环境变量（可选覆盖项，留空/注释时使用 src/constants.js 的默认值）
 [vars]
-UPSTREAM_DOH_URL = "https://cloudflare-dns.com/dns-query"
-UPSTREAM_TIMEOUT_MS = "5000"
-CACHE_TTL_MAX = "86400"
+# UPSTREAM_DOH_URL = "https://dns.quad9.net/dns-query"
+# UPSTREAM_TIMEOUT_MS = "5000"
+# CACHE_TTL_MAX = "86400"
 
 # 日志
 [observability]
