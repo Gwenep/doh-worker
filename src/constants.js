@@ -1,7 +1,9 @@
 // src/constants.js
 // DoH Worker 默认常量（运行时可通过 wrangler.toml 的 [vars] 覆盖，见 config.js）
 
-export const UPSTREAM_URL = 'https://dns.quad9.net/dns-query';
+// Quad9 的 ECS 端点：dns11.quad9.net (9.9.9.11) 才会把 EDNS Client-Subnet 传给权威 DNS。
+// 注意：dns.quad9.net (9.9.9.9) 默认不发送 ECS，用它会让 CDN 按 Quad9 机房位置调度。
+export const UPSTREAM_URL = 'https://dns11.quad9.net/dns-query';
 export const UPSTREAM_TIMEOUT_MS = 5000;
 export const MAX_CACHE_TTL = 86400; // 24 小时
 export const DEFAULT_TTL = 60; // 没有 SOA 时负缓存使用的默认 TTL

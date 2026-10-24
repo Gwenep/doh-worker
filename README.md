@@ -6,7 +6,7 @@
 
 - **DoH 协议** — 支持 RFC 8484，GET `?dns=base64url` 和 POST `application/dns-message`
 - **ECS 注入** — 自动获取访客 IP，IPv4 /24 掩码，IPv6 /48 掩码，注入到上游 DNS 查询
-- **上游 DNS** — 转发到 Quad9（`dns.quad9.net`），可通过 `UPSTREAM_DOH_URL` 替换
+- **上游 DNS** — 转发到 Quad9 的 ECS 端点（`dns11.quad9.net`），可通过 `UPSTREAM_DOH_URL` 替换
 - **缓存** — 利用 Cloudflare Cache API 缓存 DNS 响应，按 ECS 子网 / DO / CD 维度区分，减少上游请求
 - **隐私** — 只向上游转发 ECS，丢弃 COOKIE/NSID 等一次性 EDNS 选项；客户端可用 `/0` 前缀主动退出 ECS
 - **CORS** — 支持跨域请求
@@ -143,14 +143,34 @@ dig @doh-worker.<你的子域名>.workers.dev example.com
 
 ## 验证 ECS 是否生效
 
-ECS 注入是在查询中自动添加的，可以用抓包或者通过查询回显服务验证：
+用 Akamai 的回显服务查询，直接看权威 DNS 收到的客户端子网：
 
 ```bash
-# 使用 dig +subnet 选项模拟 ECS 查询
-# 或者直接检查上游是否返回了基于你 IP 的地址
+# 通过已部署的 Worker 验证（推荐）
+node scripts/ecs-probe.mjs --worker https://doh-worker.<你的子域名>.workers.dev
 ```
 
-如果同一个域名在不同地域的客户端得到不同的解析结果，说明 ECS 生效了。
+正常输出类似：
+
+```
+[Worker] — 180ms, rcode=NOERROR, X-Cache=MISS
+  TXT: ns 203.0.113.1 ecs 203.0.113.0/24
+  响应 ECS: 203.0.113.0/24 (scope /24)
+
+→ ECS 已生效：权威 DNS 看到的客户端子网是 203.0.113.0/24
+```
+
+如果 `TXT` 里没有 `ecs` 字段，说明 ECS 没有传到权威 DNS，检查：
+
+1. 上游是不是 `dns11.quad9.net`（`dns.quad9.net` 默认**不发送** ECS）
+2. 请求里是否带 `CF-Connecting-IP`（本地 `wrangler dev` 没有这个头，不会注入 ECS）
+3. 是否命中了之前写入的缓存（响应里 `X-Cache` 为 `HIT` 时换一个域名再测）
+
+也可以在能直连公共 DNS 的网络环境下，对比不同上游对 ECS 的处理：
+
+```bash
+node scripts/ecs-probe.mjs 1.2.3.0/24
+```
 
 ## 本地开发
 
@@ -205,13 +225,26 @@ dns-worker/
 
 ### Q: 部署后返回 502
 
-检查上游 DoH 是否可达（默认 `https://dns.quad9.net/dns-query`）：
+检查上游 DoH 是否可达（默认 `https://dns11.quad9.net/dns-query`）：
 
 ```bash
 npx wrangler tail   # 查看 Workers 日志中的 "Upstream DNS query failed"
 ```
 
 本地开发时 502 通常是本机网络无法访问上游 DoH 地址。
+
+### Q: 为什么有些域名解析出来延迟很低，有些很高？
+
+ECS 只对**支持 ECS 的权威 DNS / CDN** 有效，而且必须用会转发 ECS 的上游：
+
+- `dns.quad9.net`、`1.1.1.1`、`8.8.8.8` 默认都**不发送** ECS，CDN 会按解析器机房位置调度
+- 本项目默认的 `dns11.quad9.net`（9.9.9.11）才会真正把客户端子网传给权威 DNS
+
+所以现象是：走全局 anycast 的站点正常，依赖 geo-DNS 的站点（尤其国内 CDN）会拿到境外节点。
+先用 `node scripts/ecs-probe.mjs --worker <你的 Worker 地址>` 确认 ECS 是否真的到达权威 DNS；
+若某些站点仍慢，通常是该站点的权威 DNS/CDN 本身忽略 ECS，属于上游限制，可考虑对国内域名改用支持 ECS 的国内 DoH（如 `dns.alidns.com`）做分线路解析。
+
+切换上游或修改 ECS 后，记得清一下本地 DNS 缓存（`ipconfig /flushdns`），否则系统还会用旧 TTL 里的结果。
 
 ### Q: 如何修改上游 DNS 服务商？
 

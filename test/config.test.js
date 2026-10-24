@@ -3,6 +3,11 @@ import { resolveConfig } from '../src/config.js';
 import { UPSTREAM_URL, UPSTREAM_TIMEOUT_MS, MAX_CACHE_TTL } from '../src/constants.js';
 
 describe('resolveConfig', () => {
+  it('默认上游是 Quad9 的 ECS 端点', () => {
+    // dns.quad9.net 不发送 ECS，会导致 CDN 按 Quad9 机房位置调度
+    expect(UPSTREAM_URL).toBe('https://dns11.quad9.net/dns-query');
+  });
+
   it('没有 env 时使用默认值', () => {
     expect(resolveConfig(undefined)).toEqual({
       upstreamUrl: UPSTREAM_URL,

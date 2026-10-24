@@ -34,6 +34,11 @@ describe('buildCacheKey', () => {
     expect(buildCacheKey([question], ecs, true, true))
       .toBe('example.com|A|IN|ecs1_24_203.0.113.0|do1|cd1');
   });
+
+  it('包含上游标识，切换上游后不会命中旧缓存', () => {
+    expect(buildCacheKey([question], null, false, false, 'dns11.quad9.net'))
+      .toBe('dns11.quad9.net|example.com|A|IN|ecsnone|do0|cd0');
+  });
 });
 
 describe('getMinTTL', () => {

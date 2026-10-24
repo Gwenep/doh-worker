@@ -6,18 +6,25 @@ import { CACHE_BASE, MAX_CACHE_TTL, DEFAULT_TTL } from './constants.js';
 
 /**
  * 构建缓存键
- * 格式: qname|qtype|qclass|ecs<family>_<prefix>_<ip>|do<0|1>|cd<0|1>
+ * 格式: <upstream>|qname|qtype|qclass|ecs<family>_<prefix>_<ip>|do<0|1>|cd<0|1>
  *
  * 缓存键包含 ECS 维度，因为不同子网可能得到不同的 DNS 响应；
- * CD 位影响 DNSSEC 校验结果（AD 位），同样必须区分。
+ * CD 位影响 DNSSEC 校验结果（AD 位），同样必须区分；
+ * 上游也必须区分，否则切换上游后仍会命中旧上游写入的缓存。
  */
-function buildCacheKey(questions, ecsOption, dnssecOk, checkingDisabled = false) {
+function buildCacheKey(questions, ecsOption, dnssecOk, checkingDisabled = false, upstream = '') {
   const q = questions[0];
-  const parts = [
+  const parts = [];
+
+  if (upstream) {
+    parts.push(upstream);
+  }
+
+  parts.push(
     q.name,
     q.type || 'A',
     q.class || 'IN'
-  ];
+  );
 
   if (ecsOption) {
     parts.push(`ecs${ecsOption.family}_${ecsOption.sourcePrefixLength}_${ecsOption.ip}`);

@@ -3930,7 +3930,7 @@ var import_dns_packet = __toESM(require_dns_packet(), 1);
 var import_buffer = __toESM(require_buffer(), 1);
 
 // src/constants.js
-var UPSTREAM_URL = "https://dns.quad9.net/dns-query";
+var UPSTREAM_URL = "https://dns11.quad9.net/dns-query";
 var UPSTREAM_TIMEOUT_MS = 5e3;
 var MAX_CACHE_TTL = 86400;
 var DEFAULT_TTL = 60;
@@ -4144,13 +4144,17 @@ function getDnssecOk(parsedPacket) {
 
 // src/cache.js
 var import_buffer2 = __toESM(require_buffer(), 1);
-function buildCacheKey(questions, ecsOption, dnssecOk, checkingDisabled = false) {
+function buildCacheKey(questions, ecsOption, dnssecOk, checkingDisabled = false, upstream = "") {
   const q = questions[0];
-  const parts = [
+  const parts = [];
+  if (upstream) {
+    parts.push(upstream);
+  }
+  parts.push(
     q.name,
     q.type || "A",
     q.class || "IN"
-  ];
+  );
   if (ecsOption) {
     parts.push(`ecs${ecsOption.family}_${ecsOption.sourcePrefixLength}_${ecsOption.ip}`);
   } else {
@@ -4342,7 +4346,13 @@ var index_default = {
       const ecsOption = injectECS(parsed, clientIp);
       const dnssecOk = getDnssecOk(parsed);
       const checkingDisabled = !!(parsed.flags & CD_FLAG);
-      const cacheKey = buildCacheKey(parsed.questions, ecsOption, dnssecOk, checkingDisabled);
+      const cacheKey = buildCacheKey(
+        parsed.questions,
+        ecsOption,
+        dnssecOk,
+        checkingDisabled,
+        new URL(config.upstreamUrl).host
+      );
       const cacheRequest = buildCacheRequest(cacheKey);
       const cachedResponse = await getFromCache(cacheRequest, parsed.id);
       if (cachedResponse) {

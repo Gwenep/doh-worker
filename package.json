@@ -10,6 +10,7 @@
     "deploy": "wrangler deploy",
     "build": "node scripts/build.js",
     "verify:bundle": "node scripts/verify-no-compat.mjs",
+    "probe:ecs": "node scripts/ecs-probe.mjs",
     "test": "vitest run"
   },
   "keywords": [

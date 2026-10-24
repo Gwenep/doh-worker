@@ -56,7 +56,7 @@ function makeUpstreamResponse(queryBuffer, { ttl = 300, rcode = 0, flags = RA } 
   });
 }
 
-function callWorker({ method = 'GET', body, headers = {} } = {}) {
+function callWorker({ method = 'GET', body, headers = {}, env = {} } = {}) {
   const waitUntil = [];
   const ctx = { waitUntil: (promise) => waitUntil.push(promise) };
   const requestHeaders = { 'CF-Connecting-IP': CLIENT_IP, ...headers };
@@ -64,7 +64,7 @@ function callWorker({ method = 'GET', body, headers = {} } = {}) {
     ? new Request(`https://doh.example/?dns=${Buffer.from(body).toString('base64url')}`, { headers: requestHeaders })
     : new Request('https://doh.example/', { method, headers: requestHeaders, body });
 
-  return worker.fetch(request, {}, ctx).then(async (response) => {
+  return worker.fetch(request, env, ctx).then(async (response) => {
     await Promise.all(waitUntil);
     return response;
   });
@@ -177,6 +177,14 @@ describe('GET 请求', () => {
   it('CD 位不同的请求不会共用缓存', async () => {
     await callWorker({ body: makeQuery({ flags: RD }) });
     await callWorker({ body: makeQuery({ flags: RD | CD }) });
+
+    expect(upstreamBodies).toHaveLength(2);
+    expect(cache.putCount).toBe(2);
+  });
+
+  it('切换上游后不会命中旧上游的缓存', async () => {
+    await callWorker({ body: makeQuery(), env: { UPSTREAM_DOH_URL: 'https://dns11.quad9.net/dns-query' } });
+    await callWorker({ body: makeQuery(), env: { UPSTREAM_DOH_URL: 'https://dns.google/dns-query' } });
 
     expect(upstreamBodies).toHaveLength(2);
     expect(cache.putCount).toBe(2);

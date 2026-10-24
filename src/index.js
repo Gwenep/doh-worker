@@ -87,7 +87,13 @@ export default {
       // ==================================================================
       // 步骤 4: 缓存查找（命中时事务 ID 会被改回本次请求的 ID）
       // ==================================================================
-      const cacheKey = buildCacheKey(parsed.questions, ecsOption, dnssecOk, checkingDisabled);
+      const cacheKey = buildCacheKey(
+        parsed.questions,
+        ecsOption,
+        dnssecOk,
+        checkingDisabled,
+        new URL(config.upstreamUrl).host,
+      );
       const cacheRequest = buildCacheRequest(cacheKey);
 
       const cachedResponse = await getFromCache(cacheRequest, parsed.id);
