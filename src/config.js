@@ -12,15 +12,18 @@ function toInt(value, fallback, min) {
  * 解析本次请求使用的配置
  *
  * @param {Object} [env] - Worker 的 env 对象（来自 wrangler.toml [vars] / secrets）
- * @returns {{upstreamUrl: string, upstreamTimeoutMs: number, maxCacheTtl: number}}
+ * @returns {{upstreamUrl: string, upstreamSource: 'env'|'default', upstreamTimeoutMs: number, maxCacheTtl: number}}
  */
 export function resolveConfig(env) {
   const vars = env || {};
+  const envUpstream = typeof vars.UPSTREAM_DOH_URL === 'string' && vars.UPSTREAM_DOH_URL
+    ? vars.UPSTREAM_DOH_URL
+    : null;
 
   return {
-    upstreamUrl: typeof vars.UPSTREAM_DOH_URL === 'string' && vars.UPSTREAM_DOH_URL
-      ? vars.UPSTREAM_DOH_URL
-      : UPSTREAM_URL,
+    upstreamUrl: envUpstream || UPSTREAM_URL,
+    // 控制台 / wrangler 里配置的变量会覆盖代码默认值，诊断时需要区分来源
+    upstreamSource: envUpstream ? 'env' : 'default',
     upstreamTimeoutMs: toInt(vars.UPSTREAM_TIMEOUT_MS, UPSTREAM_TIMEOUT_MS, 1),
     // 允许设为 0 表示关闭缓存
     maxCacheTtl: toInt(vars.CACHE_TTL_MAX, MAX_CACHE_TTL, 0),

@@ -25,6 +25,16 @@ const ECHO_TARGETS = [
 const ALLOWED_TYPES = new Set(['A', 'AAAA', 'CNAME', 'TXT', 'MX', 'NS', 'SOA', 'SRV', 'HTTPS', 'PTR']);
 const DOMAIN_PATTERN = /^[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?(\.[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?)*$/i;
 
+// 已知上游对“客户端自带 ECS”的态度，用于在诊断里给出更准确的结论
+const UPSTREAM_NOTES = {
+  'cloudflare-dns.com': 'Cloudflare 的 1.1.1.1 不使用客户端传入的 ECS，只按它自己的出口地址调度（对少数域名会插入自己的子网）。',
+  '1.1.1.1': 'Cloudflare 的 1.1.1.1 不使用客户端传入的 ECS。',
+  'dns.quad9.net': 'Quad9 的默认端点 9.9.9.9 不发送 ECS，换成 dns11.quad9.net（9.9.9.11）才会转发。',
+  'dns.google': 'Google Public DNS 会转发 ECS，但拒绝 Akamai 等部分域名的 ECS，且不接受比 /24 更细的 IPv4 前缀。',
+  'dns.alidns.com': '阿里 DoH 主要按来源 IP 调度，不保证使用客户端传入的 ECS。',
+  'doh.pub': '腾讯 DoH 主要按来源 IP 调度，不保证使用客户端传入的 ECS。',
+};
+
 function formatEcs(option) {
   if (!option) {
     return 'none';
@@ -134,6 +144,14 @@ export async function handleDiagnostic(request, url, config) {
   const maskedIp = clientIp && prefix ? maskIp(clientIp, prefix) : null;
   const expectedEcs = maskedIp ? `${maskedIp}/${prefix}` : null;
 
+  let upstreamHost = '';
+  try {
+    upstreamHost = new URL(config.upstreamUrl).host;
+  } catch (e) {
+    upstreamHost = '';
+  }
+  const upstreamSource = config.upstreamSource || 'default';
+
   const hints = [];
   if (!clientIp) {
     hints.push('没有收到 CF-Connecting-IP：说明请求没有经过已部署的 Worker（本地 wrangler dev、反向代理丢了请求头，或客户端连的不是 Worker）。这种情况下不会注入 ECS。');
@@ -160,16 +178,27 @@ export async function handleDiagnostic(request, url, config) {
       ok: false,
       error: `查询回显服务失败: ${e.message}`,
       upstream: config.upstreamUrl,
+      upstreamSource,
       client: { hasCfConnectingIp: !!clientIp, ecs: expectedEcs },
       hints,
     }, 502);
   }
 
   const forwardedCount = echo.filter((item) => item.forwarded).length;
-  if (expectedEcs && forwardedCount > 0) {
+  const ecsForwarded = forwardedCount > 0;
+
+  if (expectedEcs && ecsForwarded) {
     hints.push(`ECS 已到达权威 DNS：权威服务器看到的客户端子网是 ${expectedEcs}。所以“透传”本身是生效的；某些域名仍慢，说明该域名的权威 DNS/CDN 忽略 ECS，或者慢与 DNS 解析结果无关。`);
   } else if (expectedEcs) {
-    hints.push(`权威 DNS 没有看到 ${expectedEcs}：上游没有转发我们注入的 ECS。先确认 Worker 已重新部署（看 upstream 字段是不是 dns11.quad9.net），再看 withEcs.txt 里权威服务器实际看到的值。`);
+    hints.push(`权威 DNS 没有看到 ${expectedEcs}，withEcs.txt 里显示的是权威服务器实际收到的值。`);
+    if (UPSTREAM_NOTES[upstreamHost]) {
+      hints.push(`当前上游 ${upstreamHost}：${UPSTREAM_NOTES[upstreamHost]}`);
+    }
+    hints.push('另外，若 upstreamSource 是 env，说明控制台 / wrangler 里配置的 UPSTREAM_DOH_URL 正在覆盖代码默认值——改 src/constants.js 不会生效。');
+  }
+
+  if (clientIp && maskedIp) {
+    hints.push(`注意：client.ecs 是 Worker 看到的来源子网。如果它不是你本地宽带的出口地址（例如云厂商 / 代理的地址），说明 DoH 请求走了代理，权威 DNS 会按那个位置调度，而不是你的位置。`);
   }
 
   let domainReport = null;
@@ -196,6 +225,8 @@ export async function handleDiagnostic(request, url, config) {
 
       if (!expectedEcs) {
         // 没有 ECS 时两组结果必然相同，不下结论
+      } else if (!ecsForwarded) {
+        hints.push(`${domain} 的对比结果不可用于判断 ECS 敏感性：当前上游没有转发客户端 ECS，两次查询实际携带的都是上游自己的位置信息。先把上游修对（见上一条），再测这个域名。`);
       } else if (sameAnswer) {
         hints.push(`${domain} 对 ECS 不敏感：带 ECS 和不带 ECS 返回的地址完全一样。说明该域名的权威 DNS 不使用 ECS，换上游 / 改前缀都没用；延迟来自 CDN 调度或线路本身。`);
       } else {
@@ -206,6 +237,8 @@ export async function handleDiagnostic(request, url, config) {
         ok: false,
         error: `查询 ${domain} 失败: ${e.message}`,
         upstream: config.upstreamUrl,
+        upstreamSource,
+        ecsForwarded,
         client: { hasCfConnectingIp: !!clientIp, ecs: expectedEcs },
         echo,
         hints,
@@ -215,8 +248,10 @@ export async function handleDiagnostic(request, url, config) {
 
   return json({
     ok: true,
-    build: 'ecs-diag-v1',
+    build: 'ecs-diag-v2',
     upstream: config.upstreamUrl,
+    upstreamSource,
+    ecsForwarded,
     client: {
       hasCfConnectingIp: !!clientIp,
       ecs: expectedEcs,

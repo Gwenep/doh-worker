@@ -66,8 +66,8 @@ beforeEach(() => {
   });
 });
 
-function callDiag(path = '/__diag', headers = { 'CF-Connecting-IP': CLIENT_IP }) {
-  return worker.fetch(new Request(`https://doh.example${path}`, { headers }), {}, { waitUntil: () => {} });
+function callDiag(path = '/__diag', headers = { 'CF-Connecting-IP': CLIENT_IP }, env = {}) {
+  return worker.fetch(new Request(`https://doh.example${path}`, { headers }), env, { waitUntil: () => {} });
 }
 
 describe('GET /__diag', () => {
@@ -79,7 +79,53 @@ describe('GET /__diag', () => {
     expect(response.headers.get('Cache-Control')).toBe('no-store');
     expect(body.ok).toBe(true);
     expect(body.upstream).toMatch(/^https:\/\//);
+    expect(body.upstreamSource).toBe('default');
+    expect(body.ecsForwarded).toBe(true);
     expect(body.client).toEqual({ hasCfConnectingIp: true, ecs: CLIENT_PREFIX });
+  });
+
+  it('环境变量覆盖上游时标明来源', async () => {
+    const body = await callDiag('/__diag', { 'CF-Connecting-IP': CLIENT_IP }, {
+      UPSTREAM_DOH_URL: 'https://cloudflare-dns.com/dns-query',
+    }).then((r) => r.json());
+
+    expect(body.upstream).toBe('https://cloudflare-dns.com/dns-query');
+    expect(body.upstreamSource).toBe('env');
+  });
+
+  it('上游忽略客户端 ECS 时，不把域名误判为“不支持 ECS”', async () => {
+    // 模拟 Cloudflare：无论我们传什么，都回显自己的出口子网
+    globalThis.fetch = vi.fn(async (url, init) => {
+      const query = decode(Buffer.from(init.body));
+      const question = query.questions[0];
+      const resolverEcs = '2a06:98c0:3600::/56';
+
+      const answers = question.name === 'whoami.ds.akahelp.net'
+        ? [{ name: question.name, type: 'TXT', class: 'IN', ttl: 20, data: ['ecs', `${resolverEcs}/56`] }]
+        : (question.type === 'A'
+          ? [{ name: question.name, type: 'A', class: 'IN', ttl: 60, data: '43.159.77.250' }]
+          : []);
+
+      return new Response(encode({
+        id: query.id,
+        type: 'response',
+        flags: 0x8180,
+        questions: query.questions,
+        answers,
+        authorities: [],
+        additionals: [],
+      }), { headers: { 'Content-Type': 'application/dns-message' } });
+    });
+
+    const body = await callDiag('/__diag?domain=nikke-kr.com', { 'CF-Connecting-IP': CLIENT_IP }, {
+      UPSTREAM_DOH_URL: 'https://cloudflare-dns.com/dns-query',
+    }).then((r) => r.json());
+
+    expect(body.ecsForwarded).toBe(false);
+    expect(body.domain.sameAnswer).toBe(true);
+    expect(body.hints.join('')).toContain('不使用客户端传入的 ECS');
+    expect(body.hints.join('')).toContain('不可用于判断 ECS 敏感性');
+    expect(body.hints.join('')).not.toContain('对 ECS 不敏感');
   });
 
   it('判定 ECS 是否到达权威 DNS', async () => {
@@ -117,14 +163,20 @@ describe('GET /__diag', () => {
       const body = Buffer.from(init.body);
       const query = decode(body);
       const question = query.questions[0];
+
+      // 回显服务照常反映 ECS，但业务域名无论带不带 ECS 都返回同一组地址
+      if (question.type !== 'A') {
+        return new Response(makeEchoResponse(body), {
+          headers: { 'Content-Type': 'application/dns-message' },
+        });
+      }
+
       return new Response(encode({
         id: query.id,
         type: 'response',
         flags: 0x8180,
         questions: query.questions,
-        answers: question.type === 'A'
-          ? [{ name: question.name, type: 'A', class: 'IN', ttl: 60, data: '198.51.100.10' }]
-          : [],
+        answers: [{ name: question.name, type: 'A', class: 'IN', ttl: 60, data: '198.51.100.10' }],
         authorities: [],
         additionals: [],
       }), { headers: { 'Content-Type': 'application/dns-message' } });
@@ -132,6 +184,7 @@ describe('GET /__diag', () => {
 
     const body = await callDiag('/__diag?domain=static.example.com').then((r) => r.json());
 
+    expect(body.ecsForwarded).toBe(true);
     expect(body.domain.sameAnswer).toBe(true);
     expect(body.hints.join('')).toContain('对 ECS 不敏感');
   });

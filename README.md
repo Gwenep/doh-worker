@@ -149,11 +149,12 @@ dig @doh-worker.<你的子域名>.workers.dev example.com
 https://doh-worker.<你的子域名>.workers.dev/__diag
 ```
 
-返回的 JSON 里有三块关键信息：
+返回的 JSON 里有几块关键信息：
 
 - `upstream` — 当前实际使用的上游，用来确认部署的是不是最新版本
+- `upstreamSource` — `default` 表示用的是代码默认值；`env` 表示被控制台 / `wrangler.toml` 的变量覆盖了（**改 `src/constants.js` 不会生效**）
 - `client.ecs` — 本次请求实际注入的子网（掩码后的，不含完整 IP）
-- `echo[].forwarded` — 权威 DNS 是否真的收到了这个子网
+- `ecsForwarded` / `echo[].forwarded` — 权威 DNS 是否真的收到了这个子网
 
 想看某个具体域名是否受 ECS 影响，加 `?domain=`：
 
@@ -165,6 +166,10 @@ https://doh-worker.<你的子域名>.workers.dev/__diag?domain=example.com
 
 - `false`：该域名对 ECS 敏感，ECS 正在影响调度
 - `true`：该域名忽略 ECS，换上游或改前缀都没用
+
+> 前提是 `ecsForwarded` 为 `true`。若上游本身不使用客户端 ECS（例如 `cloudflare-dns.com`），带 / 不带 ECS 的两次查询实际都带着上游自己的位置，`sameAnswer` 不能用来判断该域名是否支持 ECS。
+
+还要看 `client.ecs` 是不是你**真实宽带出口**的子网。如果它是云厂商 / 代理的地址，说明 DoH 请求走了代理，权威 DNS 会按代理位置调度，这同样会导致解析到远端节点。
 
 注意：`__diag` 的结果不经过缓存，始终是上游的实时应答。诊断接口只回显掩码后的子网，不输出完整客户端 IP。
 
@@ -258,6 +263,17 @@ npx wrangler tail   # 查看 Workers 日志中的 "Upstream DNS query failed"
 ```
 
 本地开发时 502 通常是本机网络无法访问上游 DoH 地址。
+
+### Q: 改了默认上游，线上却没变化
+
+`UPSTREAM_DOH_URL` 的优先级高于 `src/constants.js` 里的默认值。只要 Worker 的 **Settings → Variables and Secrets**（或 `wrangler.toml` 的 `[vars]`）里存在这个变量，改代码就不会生效。
+
+打开 `/__diag` 看 `upstreamSource`：
+
+- `default` — 用的是代码默认值
+- `env` — 变量正在覆盖
+
+另外缓存键里也包含上游 host，切换上游后不会命中旧缓存，但仍需清一次本地 DNS 缓存（`ipconfig /flushdns`）。
 
 ### Q: 为什么有些域名解析出来延迟很低，有些很高？
 

@@ -11,6 +11,7 @@ describe('resolveConfig', () => {
   it('没有 env 时使用默认值', () => {
     expect(resolveConfig(undefined)).toEqual({
       upstreamUrl: UPSTREAM_URL,
+      upstreamSource: 'default',
       upstreamTimeoutMs: UPSTREAM_TIMEOUT_MS,
       maxCacheTtl: MAX_CACHE_TTL,
     });
@@ -23,9 +24,17 @@ describe('resolveConfig', () => {
       CACHE_TTL_MAX: '600',
     })).toEqual({
       upstreamUrl: 'https://dns.alidns.com/dns-query',
+      upstreamSource: 'env',
       upstreamTimeoutMs: 2000,
       maxCacheTtl: 600,
     });
+  });
+
+  it('环境变量会覆盖代码默认值（改 constants.js 对已部署的 Worker 无效）', () => {
+    const config = resolveConfig({ UPSTREAM_DOH_URL: 'https://cloudflare-dns.com/dns-query' });
+
+    expect(config.upstreamUrl).toBe('https://cloudflare-dns.com/dns-query');
+    expect(config.upstreamSource).toBe('env');
   });
 
   it('非法数值回退到默认值', () => {
