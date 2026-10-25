@@ -4141,6 +4141,12 @@ function getDnssecOk(parsedPacket) {
   }
   return false;
 }
+function removeECS(parsedPacket) {
+  const optRecord = findOptRecord(parsedPacket);
+  if (optRecord) {
+    optRecord.options = [];
+  }
+}
 
 // src/cache.js
 var import_buffer2 = __toESM(require_buffer(), 1);
@@ -4473,6 +4479,7 @@ async function handleDiagnostic(request, url, config) {
     upstream: config.upstreamUrl,
     upstreamSource,
     ecsForwarded,
+    ecsFallback: config.ecsFallback !== false,
     client: {
       hasCfConnectingIp: !!clientIp,
       ecs: expectedEcs
@@ -4488,6 +4495,19 @@ function toInt(value, fallback, min) {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed >= min ? parsed : fallback;
 }
+function toBool(value, fallback) {
+  if (value === void 0 || value === null || value === "") {
+    return fallback;
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (["1", "true", "on", "yes"].includes(normalized)) {
+    return true;
+  }
+  if (["0", "false", "off", "no"].includes(normalized)) {
+    return false;
+  }
+  return fallback;
+}
 function resolveConfig(env) {
   const vars = env || {};
   const envUpstream = typeof vars.UPSTREAM_DOH_URL === "string" && vars.UPSTREAM_DOH_URL ? vars.UPSTREAM_DOH_URL : null;
@@ -4497,7 +4517,9 @@ function resolveConfig(env) {
     upstreamSource: envUpstream ? "env" : "default",
     upstreamTimeoutMs: toInt(vars.UPSTREAM_TIMEOUT_MS, UPSTREAM_TIMEOUT_MS, 1),
     // 允许设为 0 表示关闭缓存
-    maxCacheTtl: toInt(vars.CACHE_TTL_MAX, MAX_CACHE_TTL, 0)
+    maxCacheTtl: toInt(vars.CACHE_TTL_MAX, MAX_CACHE_TTL, 0),
+    // 上游按 ECS 返回 127.0.0.1 / 0.0.0.0（区域限制等）时，是否自动改用不带 ECS 的查询
+    ecsFallback: toBool(vars.ECS_FALLBACK, true)
   };
 }
 
@@ -4593,6 +4615,23 @@ var index_default = {
         upstreamBuf.writeUInt16BE(parsed.id, 0);
         decodedUpstream.id = parsed.id;
       }
+      if (ecsOption && config.ecsFallback && isBlockedAnswer(decodedUpstream)) {
+        try {
+          removeECS(parsed);
+          const retryBuf = await queryUpstream((0, import_dns_packet2.encode)(parsed), config);
+          const retryDecoded = (0, import_dns_packet2.decode)(retryBuf);
+          if (!isBlockedAnswer(retryDecoded)) {
+            if (retryDecoded.id !== parsed.id) {
+              retryBuf.writeUInt16BE(parsed.id, 0);
+              retryDecoded.id = parsed.id;
+            }
+            upstreamBuf = retryBuf;
+            decodedUpstream = retryDecoded;
+          }
+        } catch (e) {
+          console.error("ECS fallback query failed:", e.message);
+        }
+      }
       const ttl = getMinTTL(decodedUpstream);
       const cacheable = config.maxCacheTtl > 0 && ttl > 0 && !decodedUpstream.flag_tc && CACHEABLE_RCODES.includes(decodedUpstream.rcode);
       if (cacheable) {
@@ -4605,6 +4644,14 @@ var index_default = {
     }
   }
 };
+var BLOCKED_ADDRESSES = /* @__PURE__ */ new Set(["127.0.0.1", "0.0.0.0", "::1", "::"]);
+function isBlockedAnswer(decoded) {
+  const addresses = (decoded.answers || []).filter((r) => r.type === "A" || r.type === "AAAA");
+  if (addresses.length === 0) {
+    return false;
+  }
+  return addresses.every((r) => BLOCKED_ADDRESSES.has(r.data));
+}
 export {
   index_default as default
 };

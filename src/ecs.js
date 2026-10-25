@@ -260,3 +260,15 @@ export function getDnssecOk(parsedPacket) {
   }
   return false;
 }
+
+/**
+ * 移除查询里的 ECS 选项（保留 OPT 记录本身）
+ *
+ * 用于上游按 ECS 返回 127.0.0.1 等“拒绝”结果时回退到不带 ECS 的查询。
+ */
+export function removeECS(parsedPacket) {
+  const optRecord = findOptRecord(parsedPacket);
+  if (optRecord) {
+    optRecord.options = [];
+  }
+}

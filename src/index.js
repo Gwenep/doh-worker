@@ -3,7 +3,7 @@
 
 import { decode, encode } from 'dns-packet';
 import { parseGetRequest, parsePostRequest } from './doh.js';
-import { injectECS, getClientIp, getDnssecOk } from './ecs.js';
+import { injectECS, getClientIp, getDnssecOk, removeECS } from './ecs.js';
 import { buildCacheKey, buildCacheRequest, getFromCache, storeInCache, getMinTTL } from './cache.js';
 import { queryUpstream } from './upstream.js';
 import { formatResponse, errorResponse, CORS_HEADERS } from './response.js';
@@ -146,6 +146,27 @@ export default {
         decodedUpstream.id = parsed.id;
       }
 
+      // 带 ECS 却拿到 127.0.0.1 / 0.0.0.0，通常是 CDN 拒绝该子网（如区域限制），
+      // 用不带 ECS 的查询重试一次，避免整个域名因此不可用。
+      if (ecsOption && config.ecsFallback && isBlockedAnswer(decodedUpstream)) {
+        try {
+          removeECS(parsed);
+          const retryBuf = await queryUpstream(encode(parsed), config);
+          const retryDecoded = decode(retryBuf);
+
+          if (!isBlockedAnswer(retryDecoded)) {
+            if (retryDecoded.id !== parsed.id) {
+              retryBuf.writeUInt16BE(parsed.id, 0);
+              retryDecoded.id = parsed.id;
+            }
+            upstreamBuf = retryBuf;
+            decodedUpstream = retryDecoded;
+          }
+        } catch (e) {
+          console.error('ECS fallback query failed:', e.message);
+        }
+      }
+
       const ttl = getMinTTL(decodedUpstream);
 
       // 截断响应与 SERVFAIL/REFUSED 等错误结果不该进缓存，否则会放大上游故障
@@ -170,3 +191,20 @@ export default {
     }
   }
 };
+
+// 127.0.0.1 / 0.0.0.0 这类地址几乎不会出现在正常的公网解析里，
+// 通常代表 CDN 或权威 DNS 主动“拒绝服务”，例如按区域限制返回。
+const BLOCKED_ADDRESSES = new Set(['127.0.0.1', '0.0.0.0', '::1', '::']);
+
+/**
+ * 判断响应是否只有“拒绝”地址（没有任何可用的 A/AAAA）
+ *
+ * @param {Object} decoded - dnsPacket.decode() 的结果
+ */
+function isBlockedAnswer(decoded) {
+  const addresses = (decoded.answers || []).filter((r) => r.type === 'A' || r.type === 'AAAA');
+  if (addresses.length === 0) {
+    return false;
+  }
+  return addresses.every((r) => BLOCKED_ADDRESSES.has(r.data));
+}

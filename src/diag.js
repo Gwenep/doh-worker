@@ -252,6 +252,7 @@ export async function handleDiagnostic(request, url, config) {
     upstream: config.upstreamUrl,
     upstreamSource,
     ecsForwarded,
+    ecsFallback: config.ecsFallback !== false,
     client: {
       hasCfConnectingIp: !!clientIp,
       ecs: expectedEcs,

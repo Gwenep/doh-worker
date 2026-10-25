@@ -325,3 +325,62 @@ describe('璺敱', () => {
     expect(response.status).toBe(405);
   });
 });
+
+describe('ECS 回退（127.0.0.1 拒绝）', () => {
+  function mockBlockedByEcs() {
+    globalThis.fetch = vi.fn(async (url, init) => {
+      const body = Buffer.from(init.body);
+      upstreamBodies.push(body);
+
+      const query = decode(body);
+      const opt = (query.additionals || []).find((r) => r.type === 'OPT');
+      const hasEcs = !!(opt && (opt.options || []).some((o) => o.code === 8));
+
+      return new Response(encode({
+        id: query.id,
+        type: 'response',
+        flags: RA,
+        questions: query.questions,
+        answers: [{
+          name: query.questions[0].name,
+          type: 'A',
+          class: 'IN',
+          ttl: 60,
+          data: hasEcs ? '127.0.0.1' : '43.174.32.224',
+        }],
+        authorities: [],
+        additionals: [],
+      }), { headers: { 'Content-Type': 'application/dns-message' } });
+    });
+  }
+
+  it('带 ECS 拿到 127.0.0.1 时自动改用不带 ECS 的查询', async () => {
+    mockBlockedByEcs();
+
+    const response = await callWorker({ body: makeQuery() });
+    const decoded = decode(Buffer.from(await response.arrayBuffer()));
+
+    expect(upstreamBodies).toHaveLength(2);
+    const retryOpt = decode(upstreamBodies[1]).additionals.find((r) => r.type === 'OPT');
+    expect(retryOpt.options.some((o) => o.code === 8)).toBe(false);
+    expect(decoded.answers[0].data).toBe('43.174.32.224');
+  });
+
+  it('ECS_FALLBACK=0 时保留上游的 127.0.0.1', async () => {
+    mockBlockedByEcs();
+
+    const response = await callWorker({ body: makeQuery(), env: { ECS_FALLBACK: '0' } });
+    const decoded = decode(Buffer.from(await response.arrayBuffer()));
+
+    expect(upstreamBodies).toHaveLength(1);
+    expect(decoded.answers[0].data).toBe('127.0.0.1');
+  });
+
+  it('正常响应不会触发回退', async () => {
+    const response = await callWorker({ body: makeQuery() });
+    const decoded = decode(Buffer.from(await response.arrayBuffer()));
+
+    expect(upstreamBodies).toHaveLength(1);
+    expect(decoded.answers[0].data).toBe('93.184.216.34');
+  });
+});

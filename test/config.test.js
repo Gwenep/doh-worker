@@ -14,6 +14,7 @@ describe('resolveConfig', () => {
       upstreamSource: 'default',
       upstreamTimeoutMs: UPSTREAM_TIMEOUT_MS,
       maxCacheTtl: MAX_CACHE_TTL,
+      ecsFallback: true,
     });
   });
 
@@ -22,12 +23,21 @@ describe('resolveConfig', () => {
       UPSTREAM_DOH_URL: 'https://dns.alidns.com/dns-query',
       UPSTREAM_TIMEOUT_MS: '2000',
       CACHE_TTL_MAX: '600',
+      ECS_FALLBACK: '0',
     })).toEqual({
       upstreamUrl: 'https://dns.alidns.com/dns-query',
       upstreamSource: 'env',
       upstreamTimeoutMs: 2000,
       maxCacheTtl: 600,
+      ecsFallback: false,
     });
+  });
+
+  it('ECS_FALLBACK 支持常见的真假写法', () => {
+    expect(resolveConfig({ ECS_FALLBACK: 'false' }).ecsFallback).toBe(false);
+    expect(resolveConfig({ ECS_FALLBACK: 'off' }).ecsFallback).toBe(false);
+    expect(resolveConfig({ ECS_FALLBACK: 'on' }).ecsFallback).toBe(true);
+    expect(resolveConfig({ ECS_FALLBACK: '看不懂' }).ecsFallback).toBe(true);
   });
 
   it('环境变量会覆盖代码默认值（改 constants.js 对已部署的 Worker 无效）', () => {
