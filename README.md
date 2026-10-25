@@ -143,7 +143,32 @@ dig @doh-worker.<你的子域名>.workers.dev example.com
 
 ## 验证 ECS 是否生效
 
-用 Akamai 的回显服务查询，直接看权威 DNS 收到的客户端子网：
+最省事的方式：浏览器直接打开诊断接口（不需要装任何东西）：
+
+```
+https://doh-worker.<你的子域名>.workers.dev/__diag
+```
+
+返回的 JSON 里有三块关键信息：
+
+- `upstream` — 当前实际使用的上游，用来确认部署的是不是最新版本
+- `client.ecs` — 本次请求实际注入的子网（掩码后的，不含完整 IP）
+- `echo[].forwarded` — 权威 DNS 是否真的收到了这个子网
+
+想看某个具体域名是否受 ECS 影响，加 `?domain=`：
+
+```
+https://doh-worker.<你的子域名>.workers.dev/__diag?domain=example.com
+```
+
+它会同时查两次——带 ECS 和不带 ECS——然后给出 `domain.sameAnswer`：
+
+- `false`：该域名对 ECS 敏感，ECS 正在影响调度
+- `true`：该域名忽略 ECS，换上游或改前缀都没用
+
+注意：`__diag` 的结果不经过缓存，始终是上游的实时应答。诊断接口只回显掩码后的子网，不输出完整客户端 IP。
+
+也可以用命令行脚本查询 Akamai 的回显服务：
 
 ```bash
 # 通过已部署的 Worker 验证（推荐）
@@ -211,6 +236,7 @@ dns-worker/
 │   ├── cache.js        # 缓存键构建、Cache API 读写、TTL 提取
 │   ├── upstream.js     # 上游 DoH 查询（默认 5 秒超时）
 │   ├── response.js     # 响应格式化 + CORS + 错误响应
+│   ├── diag.js         # /__diag 诊断接口（ECS 是否到达权威 DNS）
 │   ├── config.js       # 运行时配置（读取 wrangler.toml [vars]）
 │   └── constants.js    # 默认常量
 ├── scripts/            # 单文件打包 / 验证脚本
@@ -237,12 +263,19 @@ npx wrangler tail   # 查看 Workers 日志中的 "Upstream DNS query failed"
 
 ECS 只对**支持 ECS 的权威 DNS / CDN** 有效，而且必须用会转发 ECS 的上游：
 
-- `dns.quad9.net`、`1.1.1.1`、`8.8.8.8` 默认都**不发送** ECS，CDN 会按解析器机房位置调度
-- 本项目默认的 `dns11.quad9.net`（9.9.9.11）才会真正把客户端子网传给权威 DNS
+- `dns.quad9.net`（9.9.9.9）不发送 ECS，CDN 只能看到 Quad9 机房位置
+- 本项目默认的 `dns11.quad9.net`（9.9.9.11）会把**查询里自带的 ECS 子网**原样转给权威 DNS
+- `1.1.1.1` 只对少数域名转发 ECS；`8.8.8.8` 会拒绝 Akamai 测试域名的 ECS
 
-所以现象是：走全局 anycast 的站点正常，依赖 geo-DNS 的站点（尤其国内 CDN）会拿到境外节点。
-先用 `node scripts/ecs-probe.mjs --worker <你的 Worker 地址>` 确认 ECS 是否真的到达权威 DNS；
-若某些站点仍慢，通常是该站点的权威 DNS/CDN 本身忽略 ECS，属于上游限制，可考虑对国内域名改用支持 ECS 的国内 DoH（如 `dns.alidns.com`）做分线路解析。
+所以现象是：走全局 anycast 的站点正常，依赖 geo-DNS 的站点（尤其国内 CDN）可能拿到远端节点。
+
+排查顺序：
+
+1. 打开 `https://<你的 Worker>/__diag`，看 `upstream` 是否为 `dns11.quad9.net`、`echo[].forwarded` 是否为 `true`
+2. 打开 `https://<你的 Worker>/__diag?domain=<慢的域名>`，看 `domain.sameAnswer`
+   - `false` → ECS 起作用了，慢是 CDN 给的节点本身不优
+   - `true` → 该域名的权威 DNS 忽略 ECS，换上游/改前缀都无效
+3. 若 `forwarded` 为 `false`，先确认 Worker 已经重新部署（旧代码仍指向 `dns.quad9.net`）
 
 切换上游或修改 ECS 后，记得清一下本地 DNS 缓存（`ipconfig /flushdns`），否则系统还会用旧 TTL 里的结果。
 

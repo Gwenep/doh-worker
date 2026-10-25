@@ -7,6 +7,7 @@ import { injectECS, getClientIp, getDnssecOk } from './ecs.js';
 import { buildCacheKey, buildCacheRequest, getFromCache, storeInCache, getMinTTL } from './cache.js';
 import { queryUpstream } from './upstream.js';
 import { formatResponse, errorResponse, CORS_HEADERS } from './response.js';
+import { handleDiagnostic, DIAG_PATH } from './diag.js';
 import { resolveConfig } from './config.js';
 import { CACHEABLE_RCODES } from './constants.js';
 
@@ -26,6 +27,11 @@ export default {
           'Access-Control-Max-Age': '86400',
         }
       });
+    }
+
+    // 诊断接口：浏览器打开即可确认 ECS 是否真的到达权威 DNS
+    if (pathname === DIAG_PATH) {
+      return handleDiagnostic(request, url, resolveConfig(env));
     }
 
     // 只响应根路径 /，其他路径返回 404

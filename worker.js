@@ -228,13 +228,13 @@ var require_buffer = __commonJS({
     var base64 = require_base64_js();
     var ieee754 = require_ieee754();
     var customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" ? Symbol["for"]("nodejs.util.inspect.custom") : null;
-    exports.Buffer = Buffer5;
+    exports.Buffer = Buffer6;
     exports.SlowBuffer = SlowBuffer;
     exports.INSPECT_MAX_BYTES = 50;
     var K_MAX_LENGTH = 2147483647;
     exports.kMaxLength = K_MAX_LENGTH;
-    Buffer5.TYPED_ARRAY_SUPPORT = typedArraySupport();
-    if (!Buffer5.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" && typeof console.error === "function") {
+    Buffer6.TYPED_ARRAY_SUPPORT = typedArraySupport();
+    if (!Buffer6.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" && typeof console.error === "function") {
       console.error(
         "This browser lacks typed array (Uint8Array) support which is required by `buffer` v5.x. Use `buffer` v4.x if you require old browser support."
       );
@@ -252,17 +252,17 @@ var require_buffer = __commonJS({
         return false;
       }
     }
-    Object.defineProperty(Buffer5.prototype, "parent", {
+    Object.defineProperty(Buffer6.prototype, "parent", {
       enumerable: true,
       get: function() {
-        if (!Buffer5.isBuffer(this)) return void 0;
+        if (!Buffer6.isBuffer(this)) return void 0;
         return this.buffer;
       }
     });
-    Object.defineProperty(Buffer5.prototype, "offset", {
+    Object.defineProperty(Buffer6.prototype, "offset", {
       enumerable: true,
       get: function() {
-        if (!Buffer5.isBuffer(this)) return void 0;
+        if (!Buffer6.isBuffer(this)) return void 0;
         return this.byteOffset;
       }
     });
@@ -271,10 +271,10 @@ var require_buffer = __commonJS({
         throw new RangeError('The value "' + length + '" is invalid for option "size"');
       }
       const buf = new Uint8Array(length);
-      Object.setPrototypeOf(buf, Buffer5.prototype);
+      Object.setPrototypeOf(buf, Buffer6.prototype);
       return buf;
     }
-    function Buffer5(arg, encodingOrOffset, length) {
+    function Buffer6(arg, encodingOrOffset, length) {
       if (typeof arg === "number") {
         if (typeof encodingOrOffset === "string") {
           throw new TypeError(
@@ -285,7 +285,7 @@ var require_buffer = __commonJS({
       }
       return from(arg, encodingOrOffset, length);
     }
-    Buffer5.poolSize = 8192;
+    Buffer6.poolSize = 8192;
     function from(value, encodingOrOffset, length) {
       if (typeof value === "string") {
         return fromString(value, encodingOrOffset);
@@ -311,22 +311,22 @@ var require_buffer = __commonJS({
       }
       const valueOf = value.valueOf && value.valueOf();
       if (valueOf != null && valueOf !== value) {
-        return Buffer5.from(valueOf, encodingOrOffset, length);
+        return Buffer6.from(valueOf, encodingOrOffset, length);
       }
       const b = fromObject(value);
       if (b) return b;
       if (typeof Symbol !== "undefined" && Symbol.toPrimitive != null && typeof value[Symbol.toPrimitive] === "function") {
-        return Buffer5.from(value[Symbol.toPrimitive]("string"), encodingOrOffset, length);
+        return Buffer6.from(value[Symbol.toPrimitive]("string"), encodingOrOffset, length);
       }
       throw new TypeError(
         "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " + typeof value
       );
     }
-    Buffer5.from = function(value, encodingOrOffset, length) {
+    Buffer6.from = function(value, encodingOrOffset, length) {
       return from(value, encodingOrOffset, length);
     };
-    Object.setPrototypeOf(Buffer5.prototype, Uint8Array.prototype);
-    Object.setPrototypeOf(Buffer5, Uint8Array);
+    Object.setPrototypeOf(Buffer6.prototype, Uint8Array.prototype);
+    Object.setPrototypeOf(Buffer6, Uint8Array);
     function assertSize(size) {
       if (typeof size !== "number") {
         throw new TypeError('"size" argument must be of type number');
@@ -344,24 +344,24 @@ var require_buffer = __commonJS({
       }
       return createBuffer(size);
     }
-    Buffer5.alloc = function(size, fill, encoding) {
+    Buffer6.alloc = function(size, fill, encoding) {
       return alloc(size, fill, encoding);
     };
     function allocUnsafe(size) {
       assertSize(size);
       return createBuffer(size < 0 ? 0 : checked(size) | 0);
     }
-    Buffer5.allocUnsafe = function(size) {
+    Buffer6.allocUnsafe = function(size) {
       return allocUnsafe(size);
     };
-    Buffer5.allocUnsafeSlow = function(size) {
+    Buffer6.allocUnsafeSlow = function(size) {
       return allocUnsafe(size);
     };
     function fromString(string, encoding) {
       if (typeof encoding !== "string" || encoding === "") {
         encoding = "utf8";
       }
-      if (!Buffer5.isEncoding(encoding)) {
+      if (!Buffer6.isEncoding(encoding)) {
         throw new TypeError("Unknown encoding: " + encoding);
       }
       const length = byteLength(string, encoding) | 0;
@@ -402,11 +402,11 @@ var require_buffer = __commonJS({
       } else {
         buf = new Uint8Array(array, byteOffset, length);
       }
-      Object.setPrototypeOf(buf, Buffer5.prototype);
+      Object.setPrototypeOf(buf, Buffer6.prototype);
       return buf;
     }
     function fromObject(obj) {
-      if (Buffer5.isBuffer(obj)) {
+      if (Buffer6.isBuffer(obj)) {
         const len = checked(obj.length) | 0;
         const buf = createBuffer(len);
         if (buf.length === 0) {
@@ -435,15 +435,15 @@ var require_buffer = __commonJS({
       if (+length != length) {
         length = 0;
       }
-      return Buffer5.alloc(+length);
+      return Buffer6.alloc(+length);
     }
-    Buffer5.isBuffer = function isBuffer(b) {
-      return b != null && b._isBuffer === true && b !== Buffer5.prototype;
+    Buffer6.isBuffer = function isBuffer(b) {
+      return b != null && b._isBuffer === true && b !== Buffer6.prototype;
     };
-    Buffer5.compare = function compare(a, b) {
-      if (isInstance(a, Uint8Array)) a = Buffer5.from(a, a.offset, a.byteLength);
-      if (isInstance(b, Uint8Array)) b = Buffer5.from(b, b.offset, b.byteLength);
-      if (!Buffer5.isBuffer(a) || !Buffer5.isBuffer(b)) {
+    Buffer6.compare = function compare(a, b) {
+      if (isInstance(a, Uint8Array)) a = Buffer6.from(a, a.offset, a.byteLength);
+      if (isInstance(b, Uint8Array)) b = Buffer6.from(b, b.offset, b.byteLength);
+      if (!Buffer6.isBuffer(a) || !Buffer6.isBuffer(b)) {
         throw new TypeError(
           'The "buf1", "buf2" arguments must be one of type Buffer or Uint8Array'
         );
@@ -462,7 +462,7 @@ var require_buffer = __commonJS({
       if (y < x) return 1;
       return 0;
     };
-    Buffer5.isEncoding = function isEncoding(encoding) {
+    Buffer6.isEncoding = function isEncoding(encoding) {
       switch (String(encoding).toLowerCase()) {
         case "hex":
         case "utf8":
@@ -480,12 +480,12 @@ var require_buffer = __commonJS({
           return false;
       }
     };
-    Buffer5.concat = function concat(list, length) {
+    Buffer6.concat = function concat(list, length) {
       if (!Array.isArray(list)) {
         throw new TypeError('"list" argument must be an Array of Buffers');
       }
       if (list.length === 0) {
-        return Buffer5.alloc(0);
+        return Buffer6.alloc(0);
       }
       let i;
       if (length === void 0) {
@@ -494,13 +494,13 @@ var require_buffer = __commonJS({
           length += list[i].length;
         }
       }
-      const buffer = Buffer5.allocUnsafe(length);
+      const buffer = Buffer6.allocUnsafe(length);
       let pos = 0;
       for (i = 0; i < list.length; ++i) {
         let buf = list[i];
         if (isInstance(buf, Uint8Array)) {
           if (pos + buf.length > buffer.length) {
-            if (!Buffer5.isBuffer(buf)) buf = Buffer5.from(buf);
+            if (!Buffer6.isBuffer(buf)) buf = Buffer6.from(buf);
             buf.copy(buffer, pos);
           } else {
             Uint8Array.prototype.set.call(
@@ -509,7 +509,7 @@ var require_buffer = __commonJS({
               pos
             );
           }
-        } else if (!Buffer5.isBuffer(buf)) {
+        } else if (!Buffer6.isBuffer(buf)) {
           throw new TypeError('"list" argument must be an Array of Buffers');
         } else {
           buf.copy(buffer, pos);
@@ -519,7 +519,7 @@ var require_buffer = __commonJS({
       return buffer;
     };
     function byteLength(string, encoding) {
-      if (Buffer5.isBuffer(string)) {
+      if (Buffer6.isBuffer(string)) {
         return string.length;
       }
       if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
@@ -561,7 +561,7 @@ var require_buffer = __commonJS({
         }
       }
     }
-    Buffer5.byteLength = byteLength;
+    Buffer6.byteLength = byteLength;
     function slowToString(encoding, start, end) {
       let loweredCase = false;
       if (start === void 0 || start < 0) {
@@ -608,13 +608,13 @@ var require_buffer = __commonJS({
         }
       }
     }
-    Buffer5.prototype._isBuffer = true;
+    Buffer6.prototype._isBuffer = true;
     function swap(b, n, m) {
       const i = b[n];
       b[n] = b[m];
       b[m] = i;
     }
-    Buffer5.prototype.swap16 = function swap16() {
+    Buffer6.prototype.swap16 = function swap16() {
       const len = this.length;
       if (len % 2 !== 0) {
         throw new RangeError("Buffer size must be a multiple of 16-bits");
@@ -624,7 +624,7 @@ var require_buffer = __commonJS({
       }
       return this;
     };
-    Buffer5.prototype.swap32 = function swap32() {
+    Buffer6.prototype.swap32 = function swap32() {
       const len = this.length;
       if (len % 4 !== 0) {
         throw new RangeError("Buffer size must be a multiple of 32-bits");
@@ -635,7 +635,7 @@ var require_buffer = __commonJS({
       }
       return this;
     };
-    Buffer5.prototype.swap64 = function swap64() {
+    Buffer6.prototype.swap64 = function swap64() {
       const len = this.length;
       if (len % 8 !== 0) {
         throw new RangeError("Buffer size must be a multiple of 64-bits");
@@ -648,19 +648,19 @@ var require_buffer = __commonJS({
       }
       return this;
     };
-    Buffer5.prototype.toString = function toString() {
+    Buffer6.prototype.toString = function toString() {
       const length = this.length;
       if (length === 0) return "";
       if (arguments.length === 0) return utf8Slice(this, 0, length);
       return slowToString.apply(this, arguments);
     };
-    Buffer5.prototype.toLocaleString = Buffer5.prototype.toString;
-    Buffer5.prototype.equals = function equals(b) {
-      if (!Buffer5.isBuffer(b)) throw new TypeError("Argument must be a Buffer");
+    Buffer6.prototype.toLocaleString = Buffer6.prototype.toString;
+    Buffer6.prototype.equals = function equals(b) {
+      if (!Buffer6.isBuffer(b)) throw new TypeError("Argument must be a Buffer");
       if (this === b) return true;
-      return Buffer5.compare(this, b) === 0;
+      return Buffer6.compare(this, b) === 0;
     };
-    Buffer5.prototype.inspect = function inspect() {
+    Buffer6.prototype.inspect = function inspect() {
       let str = "";
       const max = exports.INSPECT_MAX_BYTES;
       str = this.toString("hex", 0, max).replace(/(.{2})/g, "$1 ").trim();
@@ -668,13 +668,13 @@ var require_buffer = __commonJS({
       return "<Buffer " + str + ">";
     };
     if (customInspectSymbol) {
-      Buffer5.prototype[customInspectSymbol] = Buffer5.prototype.inspect;
+      Buffer6.prototype[customInspectSymbol] = Buffer6.prototype.inspect;
     }
-    Buffer5.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
+    Buffer6.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
       if (isInstance(target, Uint8Array)) {
-        target = Buffer5.from(target, target.offset, target.byteLength);
+        target = Buffer6.from(target, target.offset, target.byteLength);
       }
-      if (!Buffer5.isBuffer(target)) {
+      if (!Buffer6.isBuffer(target)) {
         throw new TypeError(
           'The "target" argument must be one of type Buffer or Uint8Array. Received type ' + typeof target
         );
@@ -747,9 +747,9 @@ var require_buffer = __commonJS({
         else return -1;
       }
       if (typeof val === "string") {
-        val = Buffer5.from(val, encoding);
+        val = Buffer6.from(val, encoding);
       }
-      if (Buffer5.isBuffer(val)) {
+      if (Buffer6.isBuffer(val)) {
         if (val.length === 0) {
           return -1;
         }
@@ -817,13 +817,13 @@ var require_buffer = __commonJS({
       }
       return -1;
     }
-    Buffer5.prototype.includes = function includes(val, byteOffset, encoding) {
+    Buffer6.prototype.includes = function includes(val, byteOffset, encoding) {
       return this.indexOf(val, byteOffset, encoding) !== -1;
     };
-    Buffer5.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
+    Buffer6.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
       return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
     };
-    Buffer5.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
+    Buffer6.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
       return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
     };
     function hexWrite(buf, string, offset, length) {
@@ -861,7 +861,7 @@ var require_buffer = __commonJS({
     function ucs2Write(buf, string, offset, length) {
       return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length);
     }
-    Buffer5.prototype.write = function write(string, offset, length, encoding) {
+    Buffer6.prototype.write = function write(string, offset, length, encoding) {
       if (offset === void 0) {
         encoding = "utf8";
         length = this.length;
@@ -916,7 +916,7 @@ var require_buffer = __commonJS({
         }
       }
     };
-    Buffer5.prototype.toJSON = function toJSON() {
+    Buffer6.prototype.toJSON = function toJSON() {
       return {
         type: "Buffer",
         data: Array.prototype.slice.call(this._arr || this, 0)
@@ -1039,7 +1039,7 @@ var require_buffer = __commonJS({
       }
       return res;
     }
-    Buffer5.prototype.slice = function slice(start, end) {
+    Buffer6.prototype.slice = function slice(start, end) {
       const len = this.length;
       start = ~~start;
       end = end === void 0 ? len : ~~end;
@@ -1057,14 +1057,14 @@ var require_buffer = __commonJS({
       }
       if (end < start) end = start;
       const newBuf = this.subarray(start, end);
-      Object.setPrototypeOf(newBuf, Buffer5.prototype);
+      Object.setPrototypeOf(newBuf, Buffer6.prototype);
       return newBuf;
     };
     function checkOffset(offset, ext, length) {
       if (offset % 1 !== 0 || offset < 0) throw new RangeError("offset is not uint");
       if (offset + ext > length) throw new RangeError("Trying to access beyond buffer length");
     }
-    Buffer5.prototype.readUintLE = Buffer5.prototype.readUIntLE = function readUIntLE(offset, byteLength2, noAssert) {
+    Buffer6.prototype.readUintLE = Buffer6.prototype.readUIntLE = function readUIntLE(offset, byteLength2, noAssert) {
       offset = offset >>> 0;
       byteLength2 = byteLength2 >>> 0;
       if (!noAssert) checkOffset(offset, byteLength2, this.length);
@@ -1076,7 +1076,7 @@ var require_buffer = __commonJS({
       }
       return val;
     };
-    Buffer5.prototype.readUintBE = Buffer5.prototype.readUIntBE = function readUIntBE(offset, byteLength2, noAssert) {
+    Buffer6.prototype.readUintBE = Buffer6.prototype.readUIntBE = function readUIntBE(offset, byteLength2, noAssert) {
       offset = offset >>> 0;
       byteLength2 = byteLength2 >>> 0;
       if (!noAssert) {
@@ -1089,32 +1089,32 @@ var require_buffer = __commonJS({
       }
       return val;
     };
-    Buffer5.prototype.readUint8 = Buffer5.prototype.readUInt8 = function readUInt8(offset, noAssert) {
+    Buffer6.prototype.readUint8 = Buffer6.prototype.readUInt8 = function readUInt8(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 1, this.length);
       return this[offset];
     };
-    Buffer5.prototype.readUint16LE = Buffer5.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
+    Buffer6.prototype.readUint16LE = Buffer6.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 2, this.length);
       return this[offset] | this[offset + 1] << 8;
     };
-    Buffer5.prototype.readUint16BE = Buffer5.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
+    Buffer6.prototype.readUint16BE = Buffer6.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 2, this.length);
       return this[offset] << 8 | this[offset + 1];
     };
-    Buffer5.prototype.readUint32LE = Buffer5.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
+    Buffer6.prototype.readUint32LE = Buffer6.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 4, this.length);
       return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 16777216;
     };
-    Buffer5.prototype.readUint32BE = Buffer5.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
+    Buffer6.prototype.readUint32BE = Buffer6.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 4, this.length);
       return this[offset] * 16777216 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
     };
-    Buffer5.prototype.readBigUInt64LE = defineBigIntMethod(function readBigUInt64LE(offset) {
+    Buffer6.prototype.readBigUInt64LE = defineBigIntMethod(function readBigUInt64LE(offset) {
       offset = offset >>> 0;
       validateNumber(offset, "offset");
       const first = this[offset];
@@ -1126,7 +1126,7 @@ var require_buffer = __commonJS({
       const hi = this[++offset] + this[++offset] * 2 ** 8 + this[++offset] * 2 ** 16 + last * 2 ** 24;
       return BigInt(lo) + (BigInt(hi) << BigInt(32));
     });
-    Buffer5.prototype.readBigUInt64BE = defineBigIntMethod(function readBigUInt64BE(offset) {
+    Buffer6.prototype.readBigUInt64BE = defineBigIntMethod(function readBigUInt64BE(offset) {
       offset = offset >>> 0;
       validateNumber(offset, "offset");
       const first = this[offset];
@@ -1138,7 +1138,7 @@ var require_buffer = __commonJS({
       const lo = this[++offset] * 2 ** 24 + this[++offset] * 2 ** 16 + this[++offset] * 2 ** 8 + last;
       return (BigInt(hi) << BigInt(32)) + BigInt(lo);
     });
-    Buffer5.prototype.readIntLE = function readIntLE(offset, byteLength2, noAssert) {
+    Buffer6.prototype.readIntLE = function readIntLE(offset, byteLength2, noAssert) {
       offset = offset >>> 0;
       byteLength2 = byteLength2 >>> 0;
       if (!noAssert) checkOffset(offset, byteLength2, this.length);
@@ -1152,7 +1152,7 @@ var require_buffer = __commonJS({
       if (val >= mul) val -= Math.pow(2, 8 * byteLength2);
       return val;
     };
-    Buffer5.prototype.readIntBE = function readIntBE(offset, byteLength2, noAssert) {
+    Buffer6.prototype.readIntBE = function readIntBE(offset, byteLength2, noAssert) {
       offset = offset >>> 0;
       byteLength2 = byteLength2 >>> 0;
       if (!noAssert) checkOffset(offset, byteLength2, this.length);
@@ -1166,35 +1166,35 @@ var require_buffer = __commonJS({
       if (val >= mul) val -= Math.pow(2, 8 * byteLength2);
       return val;
     };
-    Buffer5.prototype.readInt8 = function readInt8(offset, noAssert) {
+    Buffer6.prototype.readInt8 = function readInt8(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 1, this.length);
       if (!(this[offset] & 128)) return this[offset];
       return (255 - this[offset] + 1) * -1;
     };
-    Buffer5.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
+    Buffer6.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 2, this.length);
       const val = this[offset] | this[offset + 1] << 8;
       return val & 32768 ? val | 4294901760 : val;
     };
-    Buffer5.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
+    Buffer6.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 2, this.length);
       const val = this[offset + 1] | this[offset] << 8;
       return val & 32768 ? val | 4294901760 : val;
     };
-    Buffer5.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
+    Buffer6.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 4, this.length);
       return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
     };
-    Buffer5.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
+    Buffer6.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 4, this.length);
       return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
     };
-    Buffer5.prototype.readBigInt64LE = defineBigIntMethod(function readBigInt64LE(offset) {
+    Buffer6.prototype.readBigInt64LE = defineBigIntMethod(function readBigInt64LE(offset) {
       offset = offset >>> 0;
       validateNumber(offset, "offset");
       const first = this[offset];
@@ -1205,7 +1205,7 @@ var require_buffer = __commonJS({
       const val = this[offset + 4] + this[offset + 5] * 2 ** 8 + this[offset + 6] * 2 ** 16 + (last << 24);
       return (BigInt(val) << BigInt(32)) + BigInt(first + this[++offset] * 2 ** 8 + this[++offset] * 2 ** 16 + this[++offset] * 2 ** 24);
     });
-    Buffer5.prototype.readBigInt64BE = defineBigIntMethod(function readBigInt64BE(offset) {
+    Buffer6.prototype.readBigInt64BE = defineBigIntMethod(function readBigInt64BE(offset) {
       offset = offset >>> 0;
       validateNumber(offset, "offset");
       const first = this[offset];
@@ -1217,32 +1217,32 @@ var require_buffer = __commonJS({
       this[++offset] * 2 ** 16 + this[++offset] * 2 ** 8 + this[++offset];
       return (BigInt(val) << BigInt(32)) + BigInt(this[++offset] * 2 ** 24 + this[++offset] * 2 ** 16 + this[++offset] * 2 ** 8 + last);
     });
-    Buffer5.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
+    Buffer6.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 4, this.length);
       return ieee754.read(this, offset, true, 23, 4);
     };
-    Buffer5.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
+    Buffer6.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 4, this.length);
       return ieee754.read(this, offset, false, 23, 4);
     };
-    Buffer5.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
+    Buffer6.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 8, this.length);
       return ieee754.read(this, offset, true, 52, 8);
     };
-    Buffer5.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
+    Buffer6.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
       offset = offset >>> 0;
       if (!noAssert) checkOffset(offset, 8, this.length);
       return ieee754.read(this, offset, false, 52, 8);
     };
     function checkInt(buf, value, offset, ext, max, min) {
-      if (!Buffer5.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
+      if (!Buffer6.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
       if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
       if (offset + ext > buf.length) throw new RangeError("Index out of range");
     }
-    Buffer5.prototype.writeUintLE = Buffer5.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength2, noAssert) {
+    Buffer6.prototype.writeUintLE = Buffer6.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength2, noAssert) {
       value = +value;
       offset = offset >>> 0;
       byteLength2 = byteLength2 >>> 0;
@@ -1258,7 +1258,7 @@ var require_buffer = __commonJS({
       }
       return offset + byteLength2;
     };
-    Buffer5.prototype.writeUintBE = Buffer5.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength2, noAssert) {
+    Buffer6.prototype.writeUintBE = Buffer6.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength2, noAssert) {
       value = +value;
       offset = offset >>> 0;
       byteLength2 = byteLength2 >>> 0;
@@ -1274,14 +1274,14 @@ var require_buffer = __commonJS({
       }
       return offset + byteLength2;
     };
-    Buffer5.prototype.writeUint8 = Buffer5.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
+    Buffer6.prototype.writeUint8 = Buffer6.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 1, 255, 0);
       this[offset] = value & 255;
       return offset + 1;
     };
-    Buffer5.prototype.writeUint16LE = Buffer5.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
+    Buffer6.prototype.writeUint16LE = Buffer6.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 2, 65535, 0);
@@ -1289,7 +1289,7 @@ var require_buffer = __commonJS({
       this[offset + 1] = value >>> 8;
       return offset + 2;
     };
-    Buffer5.prototype.writeUint16BE = Buffer5.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
+    Buffer6.prototype.writeUint16BE = Buffer6.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 2, 65535, 0);
@@ -1297,7 +1297,7 @@ var require_buffer = __commonJS({
       this[offset + 1] = value & 255;
       return offset + 2;
     };
-    Buffer5.prototype.writeUint32LE = Buffer5.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
+    Buffer6.prototype.writeUint32LE = Buffer6.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 4, 4294967295, 0);
@@ -1307,7 +1307,7 @@ var require_buffer = __commonJS({
       this[offset] = value & 255;
       return offset + 4;
     };
-    Buffer5.prototype.writeUint32BE = Buffer5.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
+    Buffer6.prototype.writeUint32BE = Buffer6.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 4, 4294967295, 0);
@@ -1357,13 +1357,13 @@ var require_buffer = __commonJS({
       buf[offset] = hi;
       return offset + 8;
     }
-    Buffer5.prototype.writeBigUInt64LE = defineBigIntMethod(function writeBigUInt64LE(value, offset = 0) {
+    Buffer6.prototype.writeBigUInt64LE = defineBigIntMethod(function writeBigUInt64LE(value, offset = 0) {
       return wrtBigUInt64LE(this, value, offset, BigInt(0), BigInt("0xffffffffffffffff"));
     });
-    Buffer5.prototype.writeBigUInt64BE = defineBigIntMethod(function writeBigUInt64BE(value, offset = 0) {
+    Buffer6.prototype.writeBigUInt64BE = defineBigIntMethod(function writeBigUInt64BE(value, offset = 0) {
       return wrtBigUInt64BE(this, value, offset, BigInt(0), BigInt("0xffffffffffffffff"));
     });
-    Buffer5.prototype.writeIntLE = function writeIntLE(value, offset, byteLength2, noAssert) {
+    Buffer6.prototype.writeIntLE = function writeIntLE(value, offset, byteLength2, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) {
@@ -1382,7 +1382,7 @@ var require_buffer = __commonJS({
       }
       return offset + byteLength2;
     };
-    Buffer5.prototype.writeIntBE = function writeIntBE(value, offset, byteLength2, noAssert) {
+    Buffer6.prototype.writeIntBE = function writeIntBE(value, offset, byteLength2, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) {
@@ -1401,7 +1401,7 @@ var require_buffer = __commonJS({
       }
       return offset + byteLength2;
     };
-    Buffer5.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
+    Buffer6.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 1, 127, -128);
@@ -1409,7 +1409,7 @@ var require_buffer = __commonJS({
       this[offset] = value & 255;
       return offset + 1;
     };
-    Buffer5.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
+    Buffer6.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 2, 32767, -32768);
@@ -1417,7 +1417,7 @@ var require_buffer = __commonJS({
       this[offset + 1] = value >>> 8;
       return offset + 2;
     };
-    Buffer5.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
+    Buffer6.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 2, 32767, -32768);
@@ -1425,7 +1425,7 @@ var require_buffer = __commonJS({
       this[offset + 1] = value & 255;
       return offset + 2;
     };
-    Buffer5.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
+    Buffer6.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 4, 2147483647, -2147483648);
@@ -1435,7 +1435,7 @@ var require_buffer = __commonJS({
       this[offset + 3] = value >>> 24;
       return offset + 4;
     };
-    Buffer5.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
+    Buffer6.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
       value = +value;
       offset = offset >>> 0;
       if (!noAssert) checkInt(this, value, offset, 4, 2147483647, -2147483648);
@@ -1446,10 +1446,10 @@ var require_buffer = __commonJS({
       this[offset + 3] = value & 255;
       return offset + 4;
     };
-    Buffer5.prototype.writeBigInt64LE = defineBigIntMethod(function writeBigInt64LE(value, offset = 0) {
+    Buffer6.prototype.writeBigInt64LE = defineBigIntMethod(function writeBigInt64LE(value, offset = 0) {
       return wrtBigUInt64LE(this, value, offset, -BigInt("0x8000000000000000"), BigInt("0x7fffffffffffffff"));
     });
-    Buffer5.prototype.writeBigInt64BE = defineBigIntMethod(function writeBigInt64BE(value, offset = 0) {
+    Buffer6.prototype.writeBigInt64BE = defineBigIntMethod(function writeBigInt64BE(value, offset = 0) {
       return wrtBigUInt64BE(this, value, offset, -BigInt("0x8000000000000000"), BigInt("0x7fffffffffffffff"));
     });
     function checkIEEE754(buf, value, offset, ext, max, min) {
@@ -1465,10 +1465,10 @@ var require_buffer = __commonJS({
       ieee754.write(buf, value, offset, littleEndian, 23, 4);
       return offset + 4;
     }
-    Buffer5.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
+    Buffer6.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
       return writeFloat(this, value, offset, true, noAssert);
     };
-    Buffer5.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
+    Buffer6.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
       return writeFloat(this, value, offset, false, noAssert);
     };
     function writeDouble(buf, value, offset, littleEndian, noAssert) {
@@ -1480,14 +1480,14 @@ var require_buffer = __commonJS({
       ieee754.write(buf, value, offset, littleEndian, 52, 8);
       return offset + 8;
     }
-    Buffer5.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
+    Buffer6.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
       return writeDouble(this, value, offset, true, noAssert);
     };
-    Buffer5.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
+    Buffer6.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
       return writeDouble(this, value, offset, false, noAssert);
     };
-    Buffer5.prototype.copy = function copy(target, targetStart, start, end) {
-      if (!Buffer5.isBuffer(target)) throw new TypeError("argument should be a Buffer");
+    Buffer6.prototype.copy = function copy(target, targetStart, start, end) {
+      if (!Buffer6.isBuffer(target)) throw new TypeError("argument should be a Buffer");
       if (!start) start = 0;
       if (!end && end !== 0) end = this.length;
       if (targetStart >= target.length) targetStart = target.length;
@@ -1516,7 +1516,7 @@ var require_buffer = __commonJS({
       }
       return len;
     };
-    Buffer5.prototype.fill = function fill(val, start, end, encoding) {
+    Buffer6.prototype.fill = function fill(val, start, end, encoding) {
       if (typeof val === "string") {
         if (typeof start === "string") {
           encoding = start;
@@ -1529,7 +1529,7 @@ var require_buffer = __commonJS({
         if (encoding !== void 0 && typeof encoding !== "string") {
           throw new TypeError("encoding must be a string");
         }
-        if (typeof encoding === "string" && !Buffer5.isEncoding(encoding)) {
+        if (typeof encoding === "string" && !Buffer6.isEncoding(encoding)) {
           throw new TypeError("Unknown encoding: " + encoding);
         }
         if (val.length === 1) {
@@ -1558,7 +1558,7 @@ var require_buffer = __commonJS({
           this[i] = val;
         }
       } else {
-        const bytes = Buffer5.isBuffer(val) ? val : Buffer5.from(val, encoding);
+        const bytes = Buffer6.isBuffer(val) ? val : Buffer6.from(val, encoding);
         const len = bytes.length;
         if (len === 0) {
           throw new TypeError('The value "' + val + '" is invalid for argument "value"');
@@ -2310,8 +2310,8 @@ var require_ip_codec = __commonJS({
       Object.defineProperty(exports2, "__esModule", {
         value: true
       });
-      exports2.decode = decode2;
-      exports2.encode = encode2;
+      exports2.decode = decode3;
+      exports2.encode = encode3;
       exports2.familyOf = familyOf;
       exports2.name = void 0;
       exports2.sizeOf = sizeOf;
@@ -2464,7 +2464,7 @@ var require_ip_codec = __commonJS({
       function familyOf(string) {
         return sizeOf(string) === v4.size ? 1 : 2;
       }
-      function encode2(ip, buff, offset) {
+      function encode3(ip, buff, offset) {
         offset = ~~offset;
         const size = sizeOf(ip);
         if (typeof buff === "function") {
@@ -2475,7 +2475,7 @@ var require_ip_codec = __commonJS({
         }
         return v6.encode(ip, buff, offset);
       }
-      function decode2(buff, offset, length) {
+      function decode3(buff, offset, length) {
         offset = ~~offset;
         length = length || buff.length - offset;
         if (length === v4.size) {
@@ -2499,7 +2499,7 @@ var require_ip_codec = __commonJS({
 var require_dns_packet = __commonJS({
   "node_modules/dns-packet/index.js"(exports) {
     "use strict";
-    var Buffer5 = require_buffer().Buffer;
+    var Buffer6 = require_buffer().Buffer;
     var types = require_types();
     var rcodes = require_rcodes();
     var opcodes = require_opcodes();
@@ -2514,7 +2514,7 @@ var require_dns_packet = __commonJS({
     var NOT_QU_MASK = ~QU_MASK;
     var name = exports.name = {};
     name.encode = function(str, buf, offset, { mail = false } = {}) {
-      if (!buf) buf = Buffer5.alloc(name.encodingLength(str));
+      if (!buf) buf = Buffer6.alloc(name.encodingLength(str));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const n = str.replace(/^\.|\.$/gm, "");
@@ -2599,11 +2599,11 @@ var require_dns_packet = __commonJS({
     name.decode.bytes = 0;
     name.encodingLength = function(n) {
       if (n === "." || n === "..") return 1;
-      return Buffer5.byteLength(n.replace(/^\.|\.$/gm, "")) + 2;
+      return Buffer6.byteLength(n.replace(/^\.|\.$/gm, "")) + 2;
     };
     var string = {};
     string.encode = function(s, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(string.encodingLength(s));
+      if (!buf) buf = Buffer6.alloc(string.encodingLength(s));
       if (!offset) offset = 0;
       const len = buf.write(s, offset + 1);
       buf[offset] = len;
@@ -2620,7 +2620,7 @@ var require_dns_packet = __commonJS({
     };
     string.decode.bytes = 0;
     string.encodingLength = function(s) {
-      return Buffer5.byteLength(s) + 1;
+      return Buffer6.byteLength(s) + 1;
     };
     var header = {};
     header.encode = function(h, buf, offset) {
@@ -2667,7 +2667,7 @@ var require_dns_packet = __commonJS({
     };
     var runknown = exports.unknown = {};
     runknown.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(runknown.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(runknown.encodingLength(data));
       if (!offset) offset = 0;
       buf.writeUInt16BE(data.length, offset);
       data.copy(buf, offset + 2);
@@ -2688,7 +2688,7 @@ var require_dns_packet = __commonJS({
     };
     var rns = exports.ns = {};
     rns.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rns.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rns.encodingLength(data));
       if (!offset) offset = 0;
       name.encode(data, buf, offset + 2);
       buf.writeUInt16BE(name.encode.bytes, offset);
@@ -2709,7 +2709,7 @@ var require_dns_packet = __commonJS({
     };
     var rsoa = exports.soa = {};
     rsoa.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rsoa.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rsoa.encodingLength(data));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -2763,13 +2763,13 @@ var require_dns_packet = __commonJS({
       if (!Array.isArray(data)) data = [data];
       for (let i = 0; i < data.length; i++) {
         if (typeof data[i] === "string") {
-          data[i] = Buffer5.from(data[i]);
+          data[i] = Buffer6.from(data[i]);
         }
-        if (!Buffer5.isBuffer(data[i])) {
+        if (!Buffer6.isBuffer(data[i])) {
           throw new Error("Must be a Buffer");
         }
       }
-      if (!buf) buf = Buffer5.alloc(rtxt.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rtxt.encodingLength(data));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -2808,7 +2808,7 @@ var require_dns_packet = __commonJS({
       let length = 2;
       data.forEach(function(buf) {
         if (typeof buf === "string") {
-          length += Buffer5.byteLength(buf) + 1;
+          length += Buffer6.byteLength(buf) + 1;
         } else {
           length += buf.length + 1;
         }
@@ -2817,10 +2817,10 @@ var require_dns_packet = __commonJS({
     };
     var rnull = exports.null = {};
     rnull.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rnull.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rnull.encodingLength(data));
       if (!offset) offset = 0;
-      if (typeof data === "string") data = Buffer5.from(data);
-      if (!data) data = Buffer5.alloc(0);
+      if (typeof data === "string") data = Buffer6.from(data);
+      if (!data) data = Buffer6.alloc(0);
       const oldOffset = offset;
       offset += 2;
       const len = data.length;
@@ -2844,11 +2844,11 @@ var require_dns_packet = __commonJS({
     rnull.decode.bytes = 0;
     rnull.encodingLength = function(data) {
       if (!data) return 2;
-      return (Buffer5.isBuffer(data) ? data.length : Buffer5.byteLength(data)) + 2;
+      return (Buffer6.isBuffer(data) ? data.length : Buffer6.byteLength(data)) + 2;
     };
     var rhinfo = exports.hinfo = {};
     rhinfo.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rhinfo.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rhinfo.encodingLength(data));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -2881,7 +2881,7 @@ var require_dns_packet = __commonJS({
     var rcname = exports.cname = rptr;
     var rdname = exports.dname = rptr;
     rptr.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rptr.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rptr.encodingLength(data));
       if (!offset) offset = 0;
       name.encode(data, buf, offset + 2);
       buf.writeUInt16BE(name.encode.bytes, offset);
@@ -2901,7 +2901,7 @@ var require_dns_packet = __commonJS({
     };
     var rsrv = exports.srv = {};
     rsrv.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rsrv.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rsrv.encodingLength(data));
       if (!offset) offset = 0;
       buf.writeUInt16BE(data.priority || 0, offset + 2);
       buf.writeUInt16BE(data.weight || 0, offset + 4);
@@ -2932,7 +2932,7 @@ var require_dns_packet = __commonJS({
     rcaa.ISSUER_CRITICAL = 1 << 7;
     rcaa.encode = function(data, buf, offset) {
       const len = rcaa.encodingLength(data);
-      if (!buf) buf = Buffer5.alloc(rcaa.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rcaa.encodingLength(data));
       if (!offset) offset = 0;
       if (data.issuerCritical) {
         data.flags = rcaa.ISSUER_CRITICAL;
@@ -2944,7 +2944,7 @@ var require_dns_packet = __commonJS({
       string.encode(data.tag, buf, offset);
       offset += string.encode.bytes;
       buf.write(data.value, offset);
-      offset += Buffer5.byteLength(data.value);
+      offset += Buffer6.byteLength(data.value);
       rcaa.encode.bytes = len;
       return buf;
     };
@@ -2970,7 +2970,7 @@ var require_dns_packet = __commonJS({
     };
     var rmx = exports.mx = {};
     rmx.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rmx.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rmx.encodingLength(data));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -3000,7 +3000,7 @@ var require_dns_packet = __commonJS({
     };
     var ra = exports.a = {};
     ra.encode = function(host, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(ra.encodingLength(host));
+      if (!buf) buf = Buffer6.alloc(ra.encodingLength(host));
       if (!offset) offset = 0;
       buf.writeUInt16BE(4, offset);
       offset += 2;
@@ -3022,7 +3022,7 @@ var require_dns_packet = __commonJS({
     };
     var raaaa = exports.aaaa = {};
     raaaa.encode = function(host, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(raaaa.encodingLength(host));
+      if (!buf) buf = Buffer6.alloc(raaaa.encodingLength(host));
       if (!offset) offset = 0;
       buf.writeUInt16BE(16, offset);
       offset += 2;
@@ -3044,7 +3044,7 @@ var require_dns_packet = __commonJS({
     };
     var roption = exports.option = {};
     roption.encode = function(option, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(roption.encodingLength(option));
+      if (!buf) buf = Buffer6.alloc(roption.encodingLength(option));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const code = optioncodes.toCode(option.code);
@@ -3062,7 +3062,7 @@ var require_dns_packet = __commonJS({
           case 8:
             const spl = option.sourcePrefixLength || 0;
             const fam = option.family || ip.familyOf(option.ip);
-            const ipBuf = ip.encode(option.ip, Buffer5.alloc);
+            const ipBuf = ip.encode(option.ip, Buffer6.alloc);
             const ipLen = Math.ceil(spl / 8);
             buf.writeUInt16BE(ipLen + 4, offset);
             offset += 2;
@@ -3127,7 +3127,7 @@ var require_dns_packet = __commonJS({
           offset += 2;
           option.sourcePrefixLength = buf.readUInt8(offset++);
           option.scopePrefixLength = buf.readUInt8(offset++);
-          const padded = Buffer5.alloc(option.family === 1 ? 4 : 16);
+          const padded = Buffer6.alloc(option.family === 1 ? 4 : 16);
           buf.copy(padded, 0, offset, offset + len - 4);
           option.ip = ip.decode(padded);
           break;
@@ -3169,7 +3169,7 @@ var require_dns_packet = __commonJS({
     };
     var ropt = exports.opt = {};
     ropt.encode = function(options, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(ropt.encodingLength(options));
+      if (!buf) buf = Buffer6.alloc(ropt.encodingLength(options));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const rdlen = encodingLengthList(options, roption);
@@ -3203,11 +3203,11 @@ var require_dns_packet = __commonJS({
     rdnskey.ZONE_KEY = 128;
     rdnskey.SECURE_ENTRYPOINT = 32768;
     rdnskey.encode = function(key, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rdnskey.encodingLength(key));
+      if (!buf) buf = Buffer6.alloc(rdnskey.encodingLength(key));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const keydata = key.key;
-      if (!Buffer5.isBuffer(keydata)) {
+      if (!Buffer6.isBuffer(keydata)) {
         throw new Error("Key must be a Buffer");
       }
       offset += 2;
@@ -3245,15 +3245,15 @@ var require_dns_packet = __commonJS({
     };
     rdnskey.decode.bytes = 0;
     rdnskey.encodingLength = function(key) {
-      return 6 + Buffer5.byteLength(key.key);
+      return 6 + Buffer6.byteLength(key.key);
     };
     var rrrsig = exports.rrsig = {};
     rrrsig.encode = function(sig, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rrrsig.encodingLength(sig));
+      if (!buf) buf = Buffer6.alloc(rrrsig.encodingLength(sig));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const signature = sig.signature;
-      if (!Buffer5.isBuffer(signature)) {
+      if (!Buffer6.isBuffer(signature)) {
         throw new Error("Signature must be a Buffer");
       }
       offset += 2;
@@ -3309,11 +3309,11 @@ var require_dns_packet = __commonJS({
     };
     rrrsig.decode.bytes = 0;
     rrrsig.encodingLength = function(sig) {
-      return 20 + name.encodingLength(sig.signersName) + Buffer5.byteLength(sig.signature);
+      return 20 + name.encodingLength(sig.signersName) + Buffer6.byteLength(sig.signature);
     };
     var rrp = exports.rp = {};
     rrp.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rrp.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rrp.encodingLength(data));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -3344,7 +3344,7 @@ var require_dns_packet = __commonJS({
     };
     var typebitmap = {};
     typebitmap.encode = function(typelist, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(typebitmap.encodingLength(typelist));
+      if (!buf) buf = Buffer6.alloc(typebitmap.encodingLength(typelist));
       if (!offset) offset = 0;
       const oldOffset = offset;
       var typesByWindow = [];
@@ -3357,7 +3357,7 @@ var require_dns_packet = __commonJS({
       }
       for (i = 0; i < typesByWindow.length; i++) {
         if (typesByWindow[i] !== void 0) {
-          var windowBuf = Buffer5.from(typesByWindow[i]);
+          var windowBuf = Buffer6.from(typesByWindow[i]);
           buf.writeUInt8(i, offset);
           offset += 1;
           buf.writeUInt8(windowBuf.length, offset);
@@ -3410,7 +3410,7 @@ var require_dns_packet = __commonJS({
     };
     var rnsec = exports.nsec = {};
     rnsec.encode = function(record, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rnsec.encodingLength(record));
+      if (!buf) buf = Buffer6.alloc(rnsec.encodingLength(record));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -3442,15 +3442,15 @@ var require_dns_packet = __commonJS({
     };
     var rnsec3 = exports.nsec3 = {};
     rnsec3.encode = function(record, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rnsec3.encodingLength(record));
+      if (!buf) buf = Buffer6.alloc(rnsec3.encodingLength(record));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const salt = record.salt;
-      if (!Buffer5.isBuffer(salt)) {
+      if (!Buffer6.isBuffer(salt)) {
         throw new Error("salt must be a Buffer");
       }
       const nextDomain = record.nextDomain;
-      if (!Buffer5.isBuffer(nextDomain)) {
+      if (!Buffer6.isBuffer(nextDomain)) {
         throw new Error("nextDomain must be a Buffer");
       }
       offset += 2;
@@ -3506,11 +3506,11 @@ var require_dns_packet = __commonJS({
     };
     var rds = exports.ds = {};
     rds.encode = function(digest, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rds.encodingLength(digest));
+      if (!buf) buf = Buffer6.alloc(rds.encodingLength(digest));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const digestdata = digest.digest;
-      if (!Buffer5.isBuffer(digestdata)) {
+      if (!Buffer6.isBuffer(digestdata)) {
         throw new Error("Digest must be a Buffer");
       }
       offset += 2;
@@ -3546,7 +3546,7 @@ var require_dns_packet = __commonJS({
     };
     rds.decode.bytes = 0;
     rds.encodingLength = function(digest) {
-      return 6 + Buffer5.byteLength(digest.digest);
+      return 6 + Buffer6.byteLength(digest.digest);
     };
     var rsshfp = exports.sshfp = {};
     rsshfp.getFingerprintLengthForHashType = function getFingerprintLengthForHashType(hashType) {
@@ -3557,8 +3557,8 @@ var require_dns_packet = __commonJS({
           return 32;
       }
     };
-    rsshfp.encode = function encode2(record, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rsshfp.encodingLength(record));
+    rsshfp.encode = function encode3(record, buf, offset) {
+      if (!buf) buf = Buffer6.alloc(rsshfp.encodingLength(record));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -3566,7 +3566,7 @@ var require_dns_packet = __commonJS({
       offset += 1;
       buf[offset] = record.hash;
       offset += 1;
-      const fingerprintBuf = Buffer5.from(record.fingerprint.toUpperCase(), "hex");
+      const fingerprintBuf = Buffer6.from(record.fingerprint.toUpperCase(), "hex");
       if (fingerprintBuf.length !== rsshfp.getFingerprintLengthForHashType(record.hash)) {
         throw new Error("Invalid fingerprint length");
       }
@@ -3577,7 +3577,7 @@ var require_dns_packet = __commonJS({
       return buf;
     };
     rsshfp.encode.bytes = 0;
-    rsshfp.decode = function decode2(buf, offset) {
+    rsshfp.decode = function decode3(buf, offset) {
       if (!offset) offset = 0;
       const oldOffset = offset;
       const record = {};
@@ -3594,11 +3594,11 @@ var require_dns_packet = __commonJS({
     };
     rsshfp.decode.bytes = 0;
     rsshfp.encodingLength = function(record) {
-      return 4 + Buffer5.from(record.fingerprint, "hex").byteLength;
+      return 4 + Buffer6.from(record.fingerprint, "hex").byteLength;
     };
     var rnaptr = exports.naptr = {};
     rnaptr.encode = function(data, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rnaptr.encodingLength(data));
+      if (!buf) buf = Buffer6.alloc(rnaptr.encodingLength(data));
       if (!offset) offset = 0;
       const oldOffset = offset;
       offset += 2;
@@ -3645,11 +3645,11 @@ var require_dns_packet = __commonJS({
     };
     var rtlsa = exports.tlsa = {};
     rtlsa.encode = function(cert, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(rtlsa.encodingLength(cert));
+      if (!buf) buf = Buffer6.alloc(rtlsa.encodingLength(cert));
       if (!offset) offset = 0;
       const oldOffset = offset;
       const certdata = cert.certificate;
-      if (!Buffer5.isBuffer(certdata)) {
+      if (!Buffer6.isBuffer(certdata)) {
         throw new Error("Certificate must be a Buffer");
       }
       offset += 2;
@@ -3685,7 +3685,7 @@ var require_dns_packet = __commonJS({
     };
     rtlsa.decode.bytes = 0;
     rtlsa.encodingLength = function(cert) {
-      return 5 + Buffer5.byteLength(cert.certificate);
+      return 5 + Buffer6.byteLength(cert.certificate);
     };
     var renc = exports.record = function(type) {
       switch (type.toUpperCase()) {
@@ -3740,7 +3740,7 @@ var require_dns_packet = __commonJS({
     };
     var answer = exports.answer = {};
     answer.encode = function(a, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(answer.encodingLength(a));
+      if (!buf) buf = Buffer6.alloc(answer.encodingLength(a));
       if (!offset) offset = 0;
       const oldOffset = offset;
       name.encode(a.name, buf, offset);
@@ -3805,7 +3805,7 @@ var require_dns_packet = __commonJS({
     };
     var question = exports.question = {};
     question.encode = function(q, buf, offset) {
-      if (!buf) buf = Buffer5.alloc(question.encodingLength(q));
+      if (!buf) buf = Buffer6.alloc(question.encodingLength(q));
       if (!offset) offset = 0;
       const oldOffset = offset;
       name.encode(q.name, buf, offset);
@@ -3846,7 +3846,7 @@ var require_dns_packet = __commonJS({
     exports.DNSSEC_OK = 1 << 15;
     exports.encode = function(result, buf, offset) {
       const allocing = !buf;
-      if (allocing) buf = Buffer5.alloc(exports.encodingLength(result));
+      if (allocing) buf = Buffer6.alloc(exports.encodingLength(result));
       if (!offset) offset = 0;
       const oldOffset = offset;
       if (!result.questions) result.questions = [];
@@ -3884,9 +3884,9 @@ var require_dns_packet = __commonJS({
     };
     exports.streamEncode = function(result) {
       const buf = exports.encode(result);
-      const sbuf = Buffer5.alloc(2);
+      const sbuf = Buffer6.alloc(2);
       sbuf.writeUInt16BE(buf.byteLength);
-      const combine = Buffer5.concat([sbuf, buf]);
+      const combine = Buffer6.concat([sbuf, buf]);
       exports.streamEncode.bytes = combine.byteLength;
       return combine;
     };
@@ -3924,7 +3924,7 @@ var require_dns_packet = __commonJS({
 });
 
 // src/index.js
-var import_dns_packet = __toESM(require_dns_packet(), 1);
+var import_dns_packet2 = __toESM(require_dns_packet(), 1);
 
 // src/doh.js
 var import_buffer = __toESM(require_buffer(), 1);
@@ -4280,6 +4280,179 @@ function errorResponse(status, message) {
   });
 }
 
+// src/diag.js
+var import_buffer4 = __toESM(require_buffer(), 1);
+var import_dns_packet = __toESM(require_dns_packet(), 1);
+var DIAG_PATH = "/__diag";
+var ECHO_TARGETS = [
+  { key: "akamai", name: "whoami.ds.akahelp.net" },
+  { key: "google", name: "o-o.myaddr.l.google.com" }
+];
+var ALLOWED_TYPES = /* @__PURE__ */ new Set(["A", "AAAA", "CNAME", "TXT", "MX", "NS", "SOA", "SRV", "HTTPS", "PTR"]);
+var DOMAIN_PATTERN = /^[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?(\.[a-z0-9_]([a-z0-9_-]*[a-z0-9_])?)*$/i;
+function formatEcs(option) {
+  if (!option) {
+    return "none";
+  }
+  return `${option.ip}/${option.sourcePrefixLength}/${option.scopePrefixLength ?? 0}`;
+}
+function txtParts(answers) {
+  return (answers || []).filter((r) => r.type === "TXT").map((r) => (r.data || []).map((part) => import_buffer4.Buffer.from(part).toString("utf8")).join(" "));
+}
+function recordData(record) {
+  if (record.type === "TXT") {
+    return (record.data || []).map((part) => import_buffer4.Buffer.from(part).toString("utf8")).join(" ");
+  }
+  return typeof record.data === "string" ? record.data : JSON.stringify(record.data);
+}
+function buildQuery(name, type, clientIp, useEcs) {
+  const packet = {
+    id: Math.floor(Math.random() * 65536),
+    type: "query",
+    flags: 256,
+    questions: [{ name, type, class: "IN" }],
+    answers: [],
+    authorities: [],
+    additionals: [{
+      name: ".",
+      type: "OPT",
+      udpPayloadSize: EDNS_PAYLOAD_SIZE,
+      extendedRcode: 0,
+      ednsVersion: 0,
+      flags: 0,
+      options: []
+    }]
+  };
+  const ecs = injectECS(packet, useEcs ? clientIp : null);
+  return { wire: (0, import_dns_packet.encode)(packet), ecs };
+}
+async function ask(name, type, clientIp, useEcs, config) {
+  const startedAt = Date.now();
+  const { wire, ecs } = buildQuery(name, type, clientIp, useEcs);
+  const buffer = await queryUpstream(wire, config);
+  const elapsedMs = Date.now() - startedAt;
+  const response = (0, import_dns_packet.decode)(buffer);
+  const opt = (response.additionals || []).find((r) => r.type === "OPT");
+  const ecsOption = opt ? (opt.options || []).find((o) => o.code === ECS_OPTION_CODE || o.type === "CLIENT_SUBNET") : null;
+  return {
+    elapsedMs,
+    rcode: response.rcode,
+    sentEcs: ecs ? formatEcs(ecs) : "none",
+    responseEcs: formatEcs(ecsOption),
+    txt: txtParts(response.answers).join(" | "),
+    answers: (response.answers || []).map((r) => ({
+      name: r.name,
+      type: r.type,
+      ttl: r.ttl,
+      data: recordData(r)
+    }))
+  };
+}
+function addressKey(result) {
+  return result.answers.filter((a) => a.type === "A" || a.type === "AAAA" || a.type === "CNAME").map((a) => `${a.type}:${a.data}`).sort().join(",");
+}
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body, null, 2), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+      ...CORS_HEADERS
+    }
+  });
+}
+async function handleDiagnostic(request, url, config) {
+  if (request.method !== "GET") {
+    return errorResponse(405, "Method Not Allowed — /__diag only supports GET");
+  }
+  const clientIp = getClientIp(request);
+  const prefix = clientIp ? clientIp.includes(":") ? IPV6_ECS_PREFIX : IPV4_ECS_PREFIX : null;
+  const maskedIp = clientIp && prefix ? maskIp(clientIp, prefix) : null;
+  const expectedEcs = maskedIp ? `${maskedIp}/${prefix}` : null;
+  const hints = [];
+  if (!clientIp) {
+    hints.push("没有收到 CF-Connecting-IP：说明请求没有经过已部署的 Worker（本地 wrangler dev、反向代理丢了请求头，或客户端连的不是 Worker）。这种情况下不会注入 ECS。");
+  }
+  let echo;
+  try {
+    echo = await Promise.all(ECHO_TARGETS.map(async (target) => {
+      const [withEcs, withoutEcs] = await Promise.all([
+        ask(target.name, "TXT", clientIp, true, config),
+        ask(target.name, "TXT", clientIp, false, config)
+      ]);
+      return {
+        service: target.key,
+        name: target.name,
+        forwarded: expectedEcs ? withEcs.txt.includes(expectedEcs) : false,
+        withEcs,
+        withoutEcs
+      };
+    }));
+  } catch (e) {
+    return json({
+      ok: false,
+      error: `查询回显服务失败: ${e.message}`,
+      upstream: config.upstreamUrl,
+      client: { hasCfConnectingIp: !!clientIp, ecs: expectedEcs },
+      hints
+    }, 502);
+  }
+  const forwardedCount = echo.filter((item) => item.forwarded).length;
+  if (expectedEcs && forwardedCount > 0) {
+    hints.push(`ECS 已到达权威 DNS：权威服务器看到的客户端子网是 ${expectedEcs}。所以“透传”本身是生效的；某些域名仍慢，说明该域名的权威 DNS/CDN 忽略 ECS，或者慢与 DNS 解析结果无关。`);
+  } else if (expectedEcs) {
+    hints.push(`权威 DNS 没有看到 ${expectedEcs}：上游没有转发我们注入的 ECS。先确认 Worker 已重新部署（看 upstream 字段是不是 dns11.quad9.net），再看 withEcs.txt 里权威服务器实际看到的值。`);
+  }
+  let domainReport = null;
+  const domainParam = url.searchParams.get("domain");
+  if (domainParam) {
+    const domain = domainParam.trim().replace(/\.$/, "").toLowerCase();
+    const type = (url.searchParams.get("type") || "A").toUpperCase();
+    if (!domain || domain.length > 253 || !DOMAIN_PATTERN.test(domain)) {
+      return errorResponse(400, "Invalid domain");
+    }
+    if (!ALLOWED_TYPES.has(type)) {
+      return errorResponse(400, `Unsupported type, use one of: ${[...ALLOWED_TYPES].join(", ")}`);
+    }
+    try {
+      const [withEcs, withoutEcs] = await Promise.all([
+        ask(domain, type, clientIp, true, config),
+        ask(domain, type, clientIp, false, config)
+      ]);
+      const sameAnswer = addressKey(withEcs) === addressKey(withoutEcs);
+      domainReport = { domain, type, sameAnswer, withEcs, withoutEcs };
+      if (!expectedEcs) {
+      } else if (sameAnswer) {
+        hints.push(`${domain} 对 ECS 不敏感：带 ECS 和不带 ECS 返回的地址完全一样。说明该域名的权威 DNS 不使用 ECS，换上游 / 改前缀都没用；延迟来自 CDN 调度或线路本身。`);
+      } else {
+        hints.push(`${domain} 对 ECS 敏感：带 ECS 与不带 ECS 返回了不同地址，说明 ECS 正在影响调度。若带 ECS 的地址仍然慢，说明该 CDN 依据 ECS 给出的节点对你并不优。`);
+      }
+    } catch (e) {
+      return json({
+        ok: false,
+        error: `查询 ${domain} 失败: ${e.message}`,
+        upstream: config.upstreamUrl,
+        client: { hasCfConnectingIp: !!clientIp, ecs: expectedEcs },
+        echo,
+        hints
+      }, 502);
+    }
+  }
+  return json({
+    ok: true,
+    build: "ecs-diag-v1",
+    upstream: config.upstreamUrl,
+    client: {
+      hasCfConnectingIp: !!clientIp,
+      ecs: expectedEcs
+    },
+    echo,
+    domain: domainReport,
+    hints
+  });
+}
+
 // src/config.js
 function toInt(value, fallback, min) {
   const parsed = Number.parseInt(value, 10);
@@ -4309,6 +4482,9 @@ var index_default = {
         }
       });
     }
+    if (pathname === DIAG_PATH) {
+      return handleDiagnostic(request, url, resolveConfig(env));
+    }
     if (pathname !== "/") {
       return errorResponse(404, "Not Found — use the root path /");
     }
@@ -4332,7 +4508,7 @@ var index_default = {
       }
       let parsed;
       try {
-        parsed = (0, import_dns_packet.decode)(dnsWireFormat);
+        parsed = (0, import_dns_packet2.decode)(dnsWireFormat);
       } catch (e) {
         return errorResponse(400, "Invalid DNS message — failed to decode");
       }
@@ -4360,7 +4536,7 @@ var index_default = {
       }
       let modifiedWireFormat;
       try {
-        modifiedWireFormat = (0, import_dns_packet.encode)(parsed);
+        modifiedWireFormat = (0, import_dns_packet2.encode)(parsed);
       } catch (e) {
         return errorResponse(500, "Failed to encode modified DNS message");
       }
@@ -4376,7 +4552,7 @@ var index_default = {
       }
       let decodedUpstream;
       try {
-        decodedUpstream = (0, import_dns_packet.decode)(upstreamBuf);
+        decodedUpstream = (0, import_dns_packet2.decode)(upstreamBuf);
       } catch (e) {
         return formatResponse(upstreamBuf, 0);
       }
